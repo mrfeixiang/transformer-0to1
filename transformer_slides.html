@@ -1,0 +1,2034 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transformer: 생물정보학을 위한 완벽 가이드</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Fira+Code:wght@400;500&display=swap');
+
+  :root {
+    --primary: #6C5CE7;
+    --primary-light: #A29BFE;
+    --secondary: #00CEC9;
+    --accent: #FD79A8;
+    --dark: #2D3436;
+    --light: #F8F9FA;
+    --gradient-1: linear-gradient(135deg, #6C5CE7, #00CEC9);
+    --gradient-2: linear-gradient(135deg, #FD79A8, #6C5CE7);
+    --gradient-3: linear-gradient(135deg, #00CEC9, #55EFC4);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: #0a0a1a;
+    color: var(--light);
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  /* Progress Bar */
+  #progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 4px;
+    background: var(--gradient-1);
+    z-index: 1000;
+    transition: width 0.4s ease;
+  }
+
+  /* Slide Counter */
+  #slide-counter {
+    position: fixed;
+    bottom: 20px;
+    right: 30px;
+    font-size: 14px;
+    color: rgba(255,255,255,0.5);
+    z-index: 100;
+    font-family: 'Fira Code', monospace;
+  }
+
+  /* Navigation */
+  .nav-btn {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(108, 92, 231, 0.3);
+    border: 1px solid rgba(108, 92, 231, 0.5);
+    color: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 20px;
+    z-index: 100;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+  }
+  .nav-btn:hover {
+    background: rgba(108, 92, 231, 0.7);
+    transform: translateY(-50%) scale(1.1);
+  }
+  #prev-btn { left: 20px; }
+  #next-btn { right: 20px; }
+
+  /* Table of Contents */
+  #toc-btn {
+    position: fixed;
+    top: 20px;
+    right: 30px;
+    background: rgba(108, 92, 231, 0.3);
+    border: 1px solid rgba(108, 92, 231, 0.5);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 13px;
+    z-index: 200;
+    font-family: 'Noto Sans KR', sans-serif;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s;
+  }
+  #toc-btn:hover { background: rgba(108, 92, 231, 0.7); }
+
+  #toc-panel {
+    position: fixed;
+    top: 0; right: -400px;
+    width: 380px;
+    height: 100vh;
+    background: rgba(10, 10, 26, 0.97);
+    border-left: 1px solid rgba(108, 92, 231, 0.3);
+    z-index: 300;
+    padding: 60px 30px 30px;
+    overflow-y: auto;
+    transition: right 0.4s ease;
+    backdrop-filter: blur(20px);
+  }
+  #toc-panel.open { right: 0; }
+  #toc-panel h3 {
+    font-size: 18px;
+    margin-bottom: 20px;
+    color: var(--primary-light);
+  }
+  .toc-item {
+    display: block;
+    padding: 10px 15px;
+    margin: 4px 0;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    color: rgba(255,255,255,0.7);
+    transition: all 0.2s;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    font-family: 'Noto Sans KR', sans-serif;
+  }
+  .toc-item:hover {
+    background: rgba(108, 92, 231, 0.2);
+    color: white;
+  }
+  .toc-item.active {
+    background: rgba(108, 92, 231, 0.3);
+    color: var(--primary-light);
+  }
+  .toc-section {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--accent);
+    margin: 20px 0 8px 15px;
+  }
+  #toc-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+  }
+
+  /* Slide Container */
+  .slides-container {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+  }
+
+  .slide {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: translateX(60px);
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+    padding: 60px 100px;
+  }
+  .slide.active {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
+  }
+  .slide.exit-left {
+    opacity: 0;
+    transform: translateX(-60px);
+  }
+
+  .slide-content {
+    max-width: 1100px;
+    width: 100%;
+  }
+
+  /* Typography */
+  .slide-title {
+    font-size: 42px;
+    font-weight: 900;
+    margin-bottom: 30px;
+    line-height: 1.3;
+  }
+  .slide-title .highlight {
+    background: var(--gradient-1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .slide-subtitle {
+    font-size: 20px;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 40px;
+    font-weight: 300;
+    line-height: 1.6;
+  }
+
+  /* Cards */
+  .card-grid {
+    display: grid;
+    gap: 20px;
+  }
+  .card-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+  .card-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .card-grid.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+
+  .card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 28px;
+    transition: all 0.3s;
+    cursor: default;
+  }
+  .card:hover {
+    background: rgba(108, 92, 231, 0.1);
+    border-color: rgba(108, 92, 231, 0.3);
+    transform: translateY(-4px);
+  }
+  .card-icon {
+    font-size: 36px;
+    margin-bottom: 16px;
+    display: block;
+  }
+  .card h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--primary-light);
+  }
+  .card p {
+    font-size: 14px;
+    color: rgba(255,255,255,0.65);
+    line-height: 1.7;
+  }
+
+  /* Code Block */
+  .code-block {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(108, 92, 231, 0.2);
+    border-radius: 12px;
+    padding: 24px;
+    font-family: 'Fira Code', monospace;
+    font-size: 14px;
+    line-height: 1.8;
+    overflow-x: auto;
+    margin: 16px 0;
+  }
+  .code-block .keyword { color: #6C5CE7; }
+  .code-block .func { color: #00CEC9; }
+  .code-block .string { color: #FD79A8; }
+  .code-block .comment { color: rgba(255,255,255,0.35); }
+  .code-block .number { color: #FDCB6E; }
+
+  /* Diagram */
+  .diagram-box {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(108, 92, 231, 0.3);
+    border-radius: 16px;
+    padding: 30px;
+    text-align: center;
+    position: relative;
+  }
+
+  .flow-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin: 12px 0;
+    flex-wrap: wrap;
+  }
+
+  .flow-box {
+    background: rgba(108, 92, 231, 0.2);
+    border: 1px solid rgba(108, 92, 231, 0.4);
+    border-radius: 10px;
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    min-width: 100px;
+    transition: all 0.3s;
+  }
+  .flow-box:hover {
+    background: rgba(108, 92, 231, 0.4);
+    transform: scale(1.05);
+  }
+  .flow-box.encoder {
+    background: rgba(0, 206, 201, 0.2);
+    border-color: rgba(0, 206, 201, 0.4);
+  }
+  .flow-box.decoder {
+    background: rgba(253, 121, 168, 0.2);
+    border-color: rgba(253, 121, 168, 0.4);
+  }
+  .flow-box.attention {
+    background: rgba(253, 203, 110, 0.15);
+    border-color: rgba(253, 203, 110, 0.4);
+    color: #FDCB6E;
+  }
+  .flow-arrow {
+    font-size: 20px;
+    color: rgba(255,255,255,0.4);
+  }
+
+  /* Two-column layout */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: start;
+  }
+
+  /* Lists */
+  .styled-list {
+    list-style: none;
+    padding: 0;
+  }
+  .styled-list li {
+    padding: 10px 0 10px 30px;
+    position: relative;
+    font-size: 16px;
+    line-height: 1.7;
+    color: rgba(255,255,255,0.8);
+  }
+  .styled-list li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: var(--primary-light);
+    font-weight: bold;
+  }
+
+  /* Interactive elements */
+  .interactive-area {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 30px;
+    margin-top: 20px;
+  }
+
+  .btn-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .toggle-btn {
+    padding: 8px 20px;
+    border-radius: 20px;
+    border: 1px solid rgba(108, 92, 231, 0.4);
+    background: rgba(108, 92, 231, 0.1);
+    color: white;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: 'Noto Sans KR', sans-serif;
+    transition: all 0.3s;
+  }
+  .toggle-btn:hover, .toggle-btn.active {
+    background: rgba(108, 92, 231, 0.5);
+    border-color: var(--primary);
+  }
+
+  .result-box {
+    background: rgba(0,0,0,0.3);
+    border-radius: 10px;
+    padding: 20px;
+    font-size: 15px;
+    line-height: 1.8;
+    min-height: 80px;
+    color: rgba(255,255,255,0.8);
+  }
+
+  /* Matrix visualization */
+  .matrix-viz {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .matrix {
+    display: grid;
+    gap: 3px;
+  }
+  .matrix-cell {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-family: 'Fira Code', monospace;
+    transition: all 0.3s;
+    cursor: pointer;
+  }
+  .matrix-cell:hover {
+    transform: scale(1.15);
+    z-index: 10;
+  }
+  .matrix-label {
+    text-align: center;
+    font-size: 14px;
+    margin-bottom: 10px;
+    color: var(--primary-light);
+    font-weight: 500;
+  }
+
+  /* Sequence visualization */
+  .seq-viz {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 15px 0;
+  }
+  .seq-token {
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-family: 'Fira Code', monospace;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+  }
+  .seq-token.dna {
+    background: rgba(0, 206, 201, 0.15);
+    border: 1px solid rgba(0, 206, 201, 0.3);
+    color: var(--secondary);
+  }
+  .seq-token.protein {
+    background: rgba(253, 121, 168, 0.15);
+    border: 1px solid rgba(253, 121, 168, 0.3);
+    color: var(--accent);
+  }
+  .seq-token:hover {
+    transform: translateY(-3px);
+  }
+  .seq-token.highlighted {
+    box-shadow: 0 0 15px rgba(108, 92, 231, 0.5);
+    border-color: var(--primary);
+  }
+
+  /* Attention heatmap */
+  .attention-heatmap {
+    display: grid;
+    gap: 2px;
+    margin: 20px auto;
+    width: fit-content;
+  }
+  .heat-cell {
+    width: 50px;
+    height: 50px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-family: 'Fira Code', monospace;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  /* Comparison table */
+  .comp-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 14px;
+  }
+  .comp-table th {
+    background: rgba(108, 92, 231, 0.2);
+    padding: 14px 20px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(108, 92, 231, 0.3);
+  }
+  .comp-table th:first-child { border-radius: 10px 0 0 0; }
+  .comp-table th:last-child { border-radius: 0 10px 0 0; }
+  .comp-table td {
+    padding: 12px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.75);
+  }
+  .comp-table tr:hover td {
+    background: rgba(108, 92, 231, 0.08);
+  }
+  .comp-table .good { color: #55EFC4; }
+  .comp-table .bad { color: #FF7675; }
+
+  /* Tag */
+  .tag {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    margin: 2px;
+  }
+  .tag-purple { background: rgba(108, 92, 231, 0.2); color: var(--primary-light); }
+  .tag-teal { background: rgba(0, 206, 201, 0.2); color: var(--secondary); }
+  .tag-pink { background: rgba(253, 121, 168, 0.2); color: var(--accent); }
+
+  /* Timeline */
+  .timeline {
+    position: relative;
+    padding-left: 30px;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: rgba(108, 92, 231, 0.3);
+  }
+  .timeline-item {
+    position: relative;
+    margin-bottom: 24px;
+  }
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -26px;
+    top: 8px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--primary);
+    border: 2px solid var(--primary-light);
+  }
+  .timeline-year {
+    font-size: 13px;
+    color: var(--primary-light);
+    font-weight: 600;
+    font-family: 'Fira Code', monospace;
+  }
+  .timeline-text {
+    font-size: 15px;
+    color: rgba(255,255,255,0.8);
+    margin-top: 4px;
+  }
+
+  /* Big number */
+  .big-number {
+    font-size: 56px;
+    font-weight: 900;
+    background: var(--gradient-1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.2;
+  }
+
+  /* Animated background dots */
+  .bg-dots {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0.4;
+  }
+
+  /* Section divider */
+  .section-slide {
+    text-align: center;
+  }
+  .section-slide .section-number {
+    font-size: 80px;
+    font-weight: 900;
+    background: var(--gradient-1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    opacity: 0.3;
+    line-height: 1;
+  }
+  .section-slide .slide-title {
+    font-size: 48px;
+  }
+
+  /* Keyboard hints */
+  .key-hints {
+    position: fixed;
+    bottom: 20px;
+    left: 30px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.3);
+    z-index: 100;
+  }
+  .key-hints kbd {
+    background: rgba(255,255,255,0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin: 0 2px;
+  }
+
+  /* Quiz */
+  .quiz-option {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.03);
+    color: white;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: 'Noto Sans KR', sans-serif;
+  }
+  .quiz-option:hover {
+    background: rgba(108, 92, 231, 0.15);
+    border-color: rgba(108, 92, 231, 0.4);
+  }
+  .quiz-option.correct {
+    background: rgba(85, 239, 196, 0.2);
+    border-color: #55EFC4;
+    color: #55EFC4;
+  }
+  .quiz-option.wrong {
+    background: rgba(255, 118, 117, 0.2);
+    border-color: #FF7675;
+    color: #FF7675;
+  }
+  .quiz-feedback {
+    margin-top: 15px;
+    padding: 15px;
+    border-radius: 10px;
+    font-size: 14px;
+    line-height: 1.7;
+    display: none;
+  }
+
+  /* Annotation */
+  .anno {
+    font-size: 12px;
+    color: rgba(255,255,255,0.4);
+    margin-top: 15px;
+    font-style: italic;
+  }
+
+  /* Tooltip on flow-box */
+  .flow-box[data-tip] {
+    position: relative;
+  }
+  .flow-box[data-tip]:hover::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.9);
+    border: 1px solid rgba(108,92,231,0.4);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    white-space: nowrap;
+    color: rgba(255,255,255,0.9);
+    z-index: 50;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(108,92,231,0.3); border-radius: 3px; }
+
+  .bio-example {
+    background: rgba(0, 206, 201, 0.08);
+    border-left: 3px solid var(--secondary);
+    padding: 16px 20px;
+    border-radius: 0 10px 10px 0;
+    margin: 12px 0;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  .bio-example strong { color: var(--secondary); }
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+<div id="slide-counter"></div>
+
+<button id="prev-btn" class="nav-btn" onclick="changeSlide(-1)">&#8249;</button>
+<button id="next-btn" class="nav-btn" onclick="changeSlide(1)">&#8250;</button>
+<button id="toc-btn" onclick="toggleTOC()">&#9776; 목차</button>
+
+<div id="toc-panel">
+  <button id="toc-close" onclick="toggleTOC()">&times;</button>
+  <h3>목차</h3>
+  <div id="toc-list"></div>
+</div>
+
+<div class="key-hints">
+  <kbd>←</kbd> <kbd>→</kbd> 또는 <kbd>Space</kbd> 로 이동
+</div>
+
+<canvas class="bg-dots" id="bgCanvas"></canvas>
+
+<div class="slides-container" id="slidesContainer">
+
+<!-- ============ SLIDE 0: TITLE ============ -->
+<div class="slide active" data-title="표지" data-section="intro">
+  <div class="slide-content" style="text-align:center;">
+    <div style="font-size:14px; letter-spacing:4px; text-transform:uppercase; color:var(--primary-light); margin-bottom:20px;">Bioinformatics × Deep Learning</div>
+    <h1 class="slide-title" style="font-size:58px;">
+      <span class="highlight">Transformer</span><br>
+      완전 정복
+    </h1>
+    <p class="slide-subtitle" style="max-width:600px; margin:20px auto 40px;">
+      "Attention Is All You Need"에서<br>AlphaFold, ESM까지 — 생물정보학 관점의 Transformer 이해
+    </p>
+    <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+      <span class="tag tag-purple">Self-Attention</span>
+      <span class="tag tag-teal">Protein Language Model</span>
+      <span class="tag tag-pink">AlphaFold</span>
+      <span class="tag tag-purple">Genomics</span>
+      <span class="tag tag-teal">ESM</span>
+    </div>
+    <p style="margin-top:50px; font-size:13px; color:rgba(255,255,255,0.3);">스페이스바 또는 → 키를 눌러 시작하세요</p>
+  </div>
+</div>
+
+<!-- ============ SLIDE 1: WHY TRANSFORMER? ============ -->
+<div class="slide" data-title="왜 Transformer인가?" data-section="intro">
+  <div class="slide-content">
+    <h2 class="slide-title">왜 <span class="highlight">Transformer</span>인가?</h2>
+    <p class="slide-subtitle">생물정보학에서 Transformer가 혁명을 일으킨 이유</p>
+    <div class="card-grid cols-3">
+      <div class="card">
+        <span class="card-icon">🧬</span>
+        <h3>서열은 언어다</h3>
+        <p>DNA, RNA, 단백질 서열은 <strong>문자열(sequence)</strong>이다. 자연어처리(NLP) 기술이 곧바로 적용 가능하다.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">⚡</span>
+        <h3>장거리 의존성</h3>
+        <p>단백질의 접촉 잔기(contact residue)는 서열상 멀리 떨어져 있지만, 3D 공간에서는 인접하다. Transformer는 이를 포착한다.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">🚀</span>
+        <h3>병렬 처리</h3>
+        <p>RNN과 달리 모든 위치를 동시에 처리할 수 있어, 대규모 유전체·단백질 데이터에 적합하다.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SLIDE 2: TIMELINE ============ -->
+<div class="slide" data-title="역사적 흐름" data-section="intro">
+  <div class="slide-content">
+    <h2 class="slide-title"><span class="highlight">Transformer</span>의 역사와 생물정보학</h2>
+    <div class="two-col">
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-year">2017</div>
+          <div class="timeline-text"><strong>"Attention Is All You Need"</strong> — Google Brain, Transformer 최초 제안</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-year">2018</div>
+          <div class="timeline-text"><strong>BERT / GPT</strong> — 사전 학습(pre-training) 패러다임 확립</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-year">2019</div>
+          <div class="timeline-text"><strong>TAPE</strong> — 단백질 서열에 Transformer 적용 벤치마크</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-year">2020</div>
+          <div class="timeline-text"><strong>AlphaFold 2</strong> — Evoformer로 단백질 구조 예측 혁명</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-year">2021</div>
+          <div class="timeline-text"><strong>ESM-1b</strong> (Meta AI) — 6억 개 단백질 서열로 학습한 언어 모델</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-year">2023</div>
+          <div class="timeline-text"><strong>ESMFold, Evo, DNABERT-2</strong> — 유전체·단백질 통합 모델 등장</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-year">2024–</div>
+          <div class="timeline-text"><strong>AlphaFold 3, ESM3</strong> — 멀티모달, 생성형 생물 AI</div>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:20px;">
+          <span class="card-icon">💡</span>
+          <h3>핵심 인사이트</h3>
+          <p>NLP에서 탄생한 Transformer가 불과 3년 만에 구조생물학의 50년 난제(단백질 접힘 문제)를 해결했다.</p>
+        </div>
+        <div class="card">
+          <span class="card-icon">📊</span>
+          <h3>숫자로 보기</h3>
+          <div style="margin-top:12px;">
+            <div class="big-number">214M</div>
+            <p style="font-size:14px; color:rgba(255,255,255,0.6);">AlphaFold DB에 등록된 예측 구조 수</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SLIDE 3: SECTION — ARCHITECTURE ============ -->
+<div class="slide section-slide" data-title="Part 1: 아키텍처" data-section="architecture">
+  <div class="slide-content">
+    <div class="section-number">01</div>
+    <h2 class="slide-title"><span class="highlight">Transformer 아키텍처</span></h2>
+    <p class="slide-subtitle">핵심 구성 요소를 하나씩 이해하기</p>
+  </div>
+</div>
+
+<!-- ============ SLIDE 4: OVERALL ARCHITECTURE ============ -->
+<div class="slide" data-title="전체 구조" data-section="architecture">
+  <div class="slide-content">
+    <h2 class="slide-title">Transformer <span class="highlight">전체 구조</span></h2>
+    <p class="slide-subtitle">각 블록 위에 마우스를 올려 설명을 확인하세요</p>
+    <div class="diagram-box">
+      <div class="flow-row">
+        <div class="flow-box" data-tip="문자를 숫자 벡터로 변환">Input Embedding</div>
+        <div class="flow-arrow">+</div>
+        <div class="flow-box" data-tip="위치 정보를 sin/cos 함수로 인코딩">Positional Encoding</div>
+      </div>
+      <div class="flow-arrow" style="font-size:28px;">↓</div>
+      <div style="border:2px dashed rgba(0,206,201,0.3); border-radius:14px; padding:20px; margin:10px 0;">
+        <div style="font-size:12px; color:var(--secondary); margin-bottom:10px;">Encoder × N</div>
+        <div class="flow-row">
+          <div class="flow-box attention" data-tip="입력의 모든 위치 쌍 간 관련성 계산">Multi-Head Self-Attention</div>
+        </div>
+        <div class="flow-arrow" style="font-size:20px;">↓</div>
+        <div class="flow-row">
+          <div class="flow-box encoder" data-tip="비선형 변환으로 특징 추출">Feed Forward Network</div>
+        </div>
+        <div style="font-size:11px; color:rgba(255,255,255,0.4); margin-top:8px;">+ Add & LayerNorm (잔차 연결)</div>
+      </div>
+      <div class="flow-arrow" style="font-size:28px;">↓</div>
+      <div style="border:2px dashed rgba(253,121,168,0.3); border-radius:14px; padding:20px; margin:10px 0;">
+        <div style="font-size:12px; color:var(--accent); margin-bottom:10px;">Decoder × N</div>
+        <div class="flow-row">
+          <div class="flow-box attention" data-tip="출력 서열 내 Self-Attention (미래 마스킹)">Masked Self-Attention</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-box attention" data-tip="Encoder 출력을 참조하는 Cross-Attention">Cross-Attention</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-box decoder" data-tip="비선형 변환">FFN</div>
+        </div>
+      </div>
+      <div class="flow-arrow" style="font-size:28px;">↓</div>
+      <div class="flow-row">
+        <div class="flow-box" data-tip="최종 확률 분포 출력">Linear + Softmax</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SLIDE 5: INPUT — TOKENIZATION ============ -->
+<div class="slide" data-title="토큰화와 임베딩" data-section="architecture">
+  <div class="slide-content">
+    <h2 class="slide-title"><span class="highlight">토큰화</span>와 임베딩</h2>
+    <p class="slide-subtitle">서열 → 숫자 벡터: Transformer의 첫 번째 단계</p>
+    <div class="two-col">
+      <div>
+        <h3 style="color:var(--secondary); margin-bottom:15px;">🧬 생물학적 서열의 토큰화</h3>
+        <div class="bio-example">
+          <strong>DNA:</strong> 각 뉴클레오타이드 (A, T, G, C) 또는 k-mer 단위<br>
+          <strong>단백질:</strong> 각 아미노산 (20종 + 특수 토큰)<br>
+          <strong>RNA:</strong> 각 뉴클레오타이드 (A, U, G, C)
+        </div>
+        <div style="margin-top:20px;">
+          <p style="font-size:14px; color:rgba(255,255,255,0.7); margin-bottom:10px;">DNA 서열 예시 (k-mer = 3):</p>
+          <div class="seq-viz">
+            <span class="seq-token dna">ATG</span>
+            <span class="seq-token dna">TGC</span>
+            <span class="seq-token dna">GCA</span>
+            <span class="seq-token dna">CAT</span>
+            <span class="seq-token dna">ATG</span>
+          </div>
+          <p style="font-size:14px; color:rgba(255,255,255,0.7); margin:15px 0 10px;">단백질 서열 예시:</p>
+          <div class="seq-viz">
+            <span class="seq-token protein">M</span>
+            <span class="seq-token protein">A</span>
+            <span class="seq-token protein">L</span>
+            <span class="seq-token protein">W</span>
+            <span class="seq-token protein">K</span>
+            <span class="seq-token protein">R</span>
+            <span class="seq-token protein">L</span>
+            <span class="seq-token protein">L</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h3 style="color:var(--primary-light); margin-bottom:15px;">📐 임베딩 (Embedding)</h3>
+        <p style="font-size:14px; color:rgba(255,255,255,0.7); line-height:1.8; margin-bottom:15px;">
+          각 토큰을 고차원 벡터(예: 768차원)로 변환한다.<br>
+          학습을 통해 의미적으로 유사한 토큰이 가까운 벡터를 갖게 된다.
+        </p>
+        <div class="code-block">
+<span class="comment"># 단백질 임베딩 예시 (PyTorch)</span>
+<span class="keyword">import</span> torch.nn <span class="keyword">as</span> nn
+
+vocab_size = <span class="number">25</span>   <span class="comment"># 20 AA + 특수토큰</span>
+d_model    = <span class="number">768</span>
+
+embedding = nn.<span class="func">Embedding</span>(vocab_size, d_model)
+
+<span class="comment"># "MALWKRLL" → [12,0,11,22,10,17,11,11]</span>
+seq = torch.<span class="func">tensor</span>([<span class="number">12,0,11,22,10,17,11,11</span>])
+emb = <span class="func">embedding</span>(seq)  <span class="comment"># (8, 768)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SLIDE 6: POSITIONAL ENCODING ============ -->
+<div class="slide" data-title="위치 인코딩" data-section="architecture">
+  <div class="slide-content">
+    <h2 class="slide-title"><span class="highlight">위치 인코딩</span> (Positional Encoding)</h2>
+    <p class="slide-subtitle">순서 정보가 없는 Transformer에 위치 감각을 부여하는 방법</p>
+    <div class="two-col">
+      <div>
+        <h3 style="color:var(--secondary); margin-bottom:15px;">왜 필요한가?</h3>
+        <ul class="styled-list">
+          <li>RNN은 순차 처리 → 위치 정보가 내재</li>
+          <li>Transformer는 모든 토큰을 동시에 봄 → <strong>위치 정보가 없다!</strong></li>
+          <li>서열에서 위치는 중요: 같은 아미노산이라도 위치에 따라 기능이 다르다</li>
+        </ul>
+        <h3 style="color:var(--primary-light); margin:25px 0 15px;">수학적 정의</h3>
+        <div class="code-block" style="font-size:15px;">
+PE(pos, 2i)   = sin(pos / 10000^(2i/d))
+PE(pos, 2i+1) = cos(pos / 10000^(2i/d))
+        </div>
+        <p style="font-size:13px; color:rgba(255,255,255,0.5); margin-top:10px;">
+          pos = 서열에서의 위치, i = 차원 인덱스, d = 임베딩 차원
+        </p>
+      </div>
+      <div>
+        <h3 style="color:var(--accent); margin-bottom:15px;">🧬 생물정보학에서의 변형</h3>
+        <div class="card" style="margin-bottom:15px;">
+          <h3>학습 가능한 위치 인코딩</h3>
+          <p>ESM, ProtTrans 등은 sin/cos 대신 학습 가능한 파라미터를 사용하여 단백질 서열의 특성에 맞게 최적화</p>
+        </div>
+        <div class="card" style="margin-bottom:15px;">
+          <h3>상대적 위치 인코딩 (RPE)</h3>
+          <p>AlphaFold에서 사용. 절대 위치가 아닌 잔기 간 <strong>상대적 거리</strong>를 인코딩 → 서열 길이에 더 잘 일반화</p>
+        </div>
+        <div class="card">
+          <h3>Rotary Position Embedding (RoPE)</h3>
+          <p>최신 모델(ESM3 등)에서 채택. 회전 변환으로 상대 위치를 내적(dot product)에 자연스럽게 반영</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SLIDE 7: SELF-ATTENTION CONCEPT ============ -->
+<div class="slide" data-title="Self-Attention 개념" data-section="attention">
+  <div class="slide-content">
+    <h2 class="slide-title"><span class="highlight">Self-Attention</span>이란?</h2>
+    <p class="slide-subtitle">"이 서열에서 어떤 위치가 어떤 위치에 중요한가?"를 계산하는 메커니즘</p>
+    <div class="two-col">
+      <div>
+        <h3 style="color:var(--secondary); margin-bottom:15px;">핵심 아이디어</h3>
+        <ul class="styled-list">
+          <li>각 토큰이 다른 모든 토큰과의 <strong>관련성(attention score)</strong>을 계산</li>
+          <li>관련성이 높은 토큰의 정보를 더 많이 반영</li>
+          <li>서열의 길이와 무관하게 <strong>모든 쌍</strong>을 한 번에 비교</li>
+        </ul>
+        <div class="bio-example" style="margin-top:20px;">
+          <strong>생물학적 의미:</strong> 단백질 서열에서 Self-Attention은 3D 공간에서 가까운 잔기 쌍(contact map)을 자동으로 학습한다.
+          Attention weight ≈ 잔기 간 거리의 역수!
+        </div>
+      </div>
+      <div>
+        <h3 style="color:var(--primary-light); margin-bottom:15px;">직관적 비유</h3>
+        <div class="card">
+          <span class="card-icon">🔍</span>
+          <h3>Query-Key-Value 비유</h3>
+          <p>도서관에서 책을 찾을 때:</p>
+          <ul class="styled-list" style="margin-top:10px;">
+            <li><strong style="color:#FDCB6E;">Query (Q)</strong> — "이 잔기는 누구와 상호작용하고 싶나?" (검색어)</li>
+            <li><strong style="color:#6C5CE7;">Key (K)</strong> — "나는 이런 특성을 가진 잔기야" (책 제목)</li>
+            <li><strong style="color:#00CEC9;">Value (V)</strong> — "나의 실제 정보는 이거야" (책 내용)</li>
+          </ul>
+          <p style="margin-top:12px; font-size:13px; color:rgba(255,255,255,0.6);">
+            Q와 K의 유사도가 높을수록, 해당 V의 비중이 커진다.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SLIDE 8: ATTENTION FORMULA ============ -->
+<div class="slide" data-title="Attention 수식" data-section="attention">
+  <div class="slide-content">
+    <h2 class="slide-title">Scaled Dot-Product <span class="highlight">Attention</span></h2>
+    <div class="two-col">
+      <div>
+        <div class="diagram-box" style="margin-bottom:20px;">
+          <div style="font-size:28px; font-weight:700; letter-spacing:2px; margin:10px 0;">
+            Attention(Q, K, V) = softmax(<span style="color:#FDCB6E;">QK<sup>T</sup></span> / <span style="color:#55EFC4;">√d<sub>k</sub></span>) <span style="color:#A29BFE;">V</span>
+          </div>
+        </div>
+        <div class="card-grid cols-2" style="margin-top:20px;">
+          <div class="card">
+            <h3 style="color:#FDCB6E;">QK<sup>T</sup></h3>
+            <p>Query와 Key의 내적 → <strong>유사도 행렬</strong> (n×n)<br>각 토큰 쌍의 관련성 점수</p>
+          </div>
+          <div class="card">
+            <h3 style="color:#55EFC4;">√d<sub>k</sub> 로 나누기</h3>
+            <p>차원이 커지면 내적 값도 커짐 → softmax가 극단적 분포가 됨. <strong>스케일링</strong>으로 안정화</p>
+          </div>
+          <div class="card">
+            <h3 style="color:var(--accent);">Softmax</h3>
+            <p>점수를 <strong>확률 분포</strong>로 변환. 합이 1이 되어 가중 평균으로 사용 가능</p>
+          </div>
+          <div class="card">
+            <h3 style="color:var(--primary-light);">× V</h3>
+            <p>확률 분포로 Value를 <strong>가중 합산</strong>. 관련성 높은 위치의 정보를 더 많이 취합</p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h3 style="color:var(--secondary); margin-bottom:15px;">단계별 계산 예시</h3>
+        <div class="code-block">
+<span class="comment"># 서열 길이 4, d_k = 3</span>
+Q = [[1,0,1], [0,1,1], [1,1,0], [0,0,1]]
+K = [[1,1,0], [0,1,1], [1,0,1], [1,1,1]]
+
+<span class="comment"># Step 1: QK^T (4×4 유사도 행렬)</span>
+scores = Q @ K.T
+<span class="comment"># [[1,1,2,2], [1,2,1,2], [2,1,1,2], [0,1,1,1]]</span>
+
+<span class="comment"># Step 2: Scale by √d_k = √3 ≈ 1.73</span>
+scores = scores / <span class="number">1.73</span>
+
+<span class="comment"># Step 3: Softmax (각 행의 합 = 1)</span>
+weights = <span class="func">softmax</span>(scores, dim=-1)
+
+<span class="comment"># Step 4: Weighted sum of V</span>
+output = weights @ V  <span class="comment"># (4, 3)</span>
+        </div>
+        <p class="anno">* 행렬 곱셈이므로 GPU에서 대규모 병렬 연산 가능</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SLIDE 9: INTERACTIVE ATTENTION ============ -->
+<div class="slide" data-title="Attention 시각화 (인터랙티브)" data-section="attention">
+  <div class="slide-content">
+    <h2 class="slide-title">Attention <span class="highlight">시각화</span> — 인터랙티브 데모</h2>
+    <p class="slide-subtitle">아미노산 토큰을 클릭하면 해당 잔기의 attention 분포를 확인할 수 있습니다</p>
+
+    <div class="interactive-area">
+      <p style="font-size:13px; color:var(--secondary); margin-bottom:12px;">단백질 서열 (GFP의 일부):</p>
+      <div class="seq-viz" id="attn-seq" style="margin-bottom:20px;"></div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+        <div>
+          <p style="font-size:13px; color:var(--primary-light); margin-bottom:10px;">Attention Weights (선택한 잔기 → 나머지):</p>
+          <div id="attn-bars" style="min-height:160px;"></div>
+        </div>
+        <div>
+          <p style="font-size:13px; color:var(--accent); margin-bottom:10px;">해석:</p>
+          <div id="attn-explain" class="result-box">
+            ← 왼쪽의 아미노산을 클릭하세요
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SLIDE 10: MULTI-HEAD ATTENTION ============ -->
+<div class="slide" data-title="Multi-Head Attention" data-section="attention">
+  <div class="slide-content">
+    <h2 class="slide-title"><span class="highlight">Multi-Head</span> Attention</h2>
+    <p class="slide-subtitle">여러 관점에서 동시에 attention을 수행하는 메커니즘</p>
+    <div class="two-col">
+      <div>
+        <h3 style="color:var(--secondary); margin-bottom:15px;">왜 여러 개의 Head가 필요한가?</h3>
+        <ul class="styled-list">
+          <li>하나의 attention head는 <strong>하나의 관계 유형</strong>만 포착</li>
+          <li>단백질에는 여러 유형의 상호작용이 공존:
+            <ul class="styled-list" style="margin-top:5px;">
+              <li>수소 결합 패턴</li>
+              <li>소수성(hydrophobic) 상호작용</li>
+              <li>정전기적 상호작용</li>
+              <li>이황화 결합(S-S bond)</li>
+            </ul>
+          </li>
+          <li>각 head가 서로 다른 상호작용을 학습!</li>
+        </ul>
+        <div class="code-block" style="margin-top:15px; font-size:13px;">
+MultiHead(Q,K,V) = <span class="func">Concat</span>(head₁, ..., headₕ) <span class="keyword">W</span>ᴼ
+
+headᵢ = <span class="func">Attention</span>(Q<span class="keyword">W</span>ᵢᵠ, K<span class="keyword">W</span>ᵢᴷ, V<span class="keyword">W</span>ᵢⱽ)
+        </div>
+      </div>
+      <div>
+        <div class="diagram-box">
+          <p style="font-size:13px; color:var(--primary-light); margin-bottom:15px;">8개 Head가 각각 다른 패턴을 학습하는 모습</p>
+          <div id="multihead-viz" style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px;"></div>
+          <p style="font-size:12px; color:rgba(255,255,255,0.4); margin-top:15px;">각 Head를 클릭하면 해당 attention 패턴을 확인할 수 있습니다</p>
+        </div>
+        <div class="bio-example" style="margin-top:15px;">
+          <strong>ESM-1b의 발견:</strong> 특정 attention head가 단백질의 접촉 맵(contact map)과 높은 상관관계를 보인다는 것이 밝혀짐.
+          즉, Transformer가 3D 구조를 서열만으로 <strong>암묵적으로 학습</strong>한다!
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SLIDE 11: FFN & LAYER NORM ============ -->
+<div class="slide" data-title="FFN, 잔차 연결, LayerNorm" data-section="architecture">
+  <div class="slide-content">
+    <h2 class="slide-title">FFN, <span class="highlight">잔차 연결</span>, LayerNorm</h2>
+    <p class="slide-subtitle">Transformer 블록의 나머지 핵심 구성 요소</p>
+    <div class="card-grid cols-3">
+      <div class="card">
+        <span class="card-icon">🔄</span>
+        <h3>Feed-Forward Network (FFN)</h3>
+        <p>각 위치에 독립적으로 적용되는 2층 MLP.</p>
+        <div class="code-block" style="font-size:12px; margin-top:10px;">
+FFN(x) = max(0, xW₁ + b₁)W₂ + b₂
+<span class="comment"># 보통 d_ff = 4 × d_model</span>
+<span class="comment"># 768 → 3072 → 768</span>
+        </div>
+        <p style="margin-top:10px; font-size:13px; color:rgba(255,255,255,0.6);">Attention이 "어디를 볼지" 결정하면, FFN이 "무엇을 추출할지" 결정한다.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">➕</span>
+        <h3>잔차 연결 (Residual)</h3>
+        <p>입력을 출력에 더해준다:</p>
+        <div class="code-block" style="font-size:13px; margin-top:10px;">
+output = x + <span class="func">SubLayer</span>(x)
+        </div>
+        <p style="margin-top:10px; font-size:13px; color:rgba(255,255,255,0.6);">
+          <strong>왜?</strong> 깊은 네트워크에서 기울기 소실 방지. 정보의 "고속도로" 역할.
+        </p>
+      </div>
+      <div class="card">
+        <span class="card-icon">📏</span>
+        <h3>Layer Normalization</h3>
+        <p>각 샘플 내에서 평균 0, 분산 1로 정규화:</p>
+        <div class="code-block" style="font-size:13px; margin-top:10px;">
+LN(x) = γ · (x - μ) / σ + β
+        </div>
+        <p style="margin-top:10px; font-size:13px; color:rgba(255,255,255,0.6);">
+          학습을 안정화하고 수렴 속도를 높인다. Pre-LN vs Post-LN 변형이 있다.
+        </p>
+      </div>
+    </div>
+    <div class="diagram-box" style="margin-top:25px;">
+      <p style="font-size:13px; color:var(--primary-light); margin-bottom:12px;">하나의 Transformer 블록 (Post-LN 기준)</p>
+      <div class="flow-row">
+        <div class="flow-box">Input x</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box attention">Self-Attn</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box" style="font-size:12px;">Add x</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box encoder">LayerNorm</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box attention">FFN</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box" style="font-size:12px;">Add</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box encoder">LayerNorm</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box">Output</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SLIDE 12: SECTION — BIO APPLICATIONS ============ -->
+<div class="slide section-slide" data-title="Part 2: 생물정보학 응용" data-section="bio">
+  <div class="slide-content">
+    <div class="section-number">02</div>
+    <h2 class="slide-title"><span class="highlight">생물정보학</span> 응용</h2>
+    <p class="slide-subtitle">Transformer가 생물학의 근본 문제를 어떻게 해결하는가</p>
+  </div>
+</div>
+
+<!-- ============ SLIDE 13: PROTEIN LANGUAGE MODELS ============ -->
+<div class="slide" data-title="단백질 언어 모델" data-section="bio">
+  <div class="slide-content">
+    <h2 class="slide-title"><span class="highlight">단백질 언어 모델</span> (Protein LM)</h2>
+    <p class="slide-subtitle">자연어의 BERT처럼, 단백질 서열을 "읽는" 모델</p>
+    <div class="two-col">
+      <div>
+        <h3 style="color:var(--secondary); margin-bottom:15px;">학습 방법: Masked Language Modeling</h3>
+        <div class="bio-example">
+          서열의 일부 아미노산을 [MASK]로 가리고,<br>
+          나머지 문맥으로부터 원래 아미노산을 예측하도록 학습
+        </div>
+        <div style="margin:20px 0;">
+          <p style="font-size:13px; color:rgba(255,255,255,0.5); margin-bottom:8px;">학습 예시:</p>
+          <div class="seq-viz">
+            <span class="seq-token protein">M</span>
+            <span class="seq-token protein" style="background:rgba(108,92,231,0.3); border-color:var(--primary);">[MASK]</span>
+            <span class="seq-token protein">L</span>
+            <span class="seq-token protein">W</span>
+            <span class="seq-token protein" style="background:rgba(108,92,231,0.3); border-color:var(--primary);">[MASK]</span>
+            <span class="seq-token protein">R</span>
+            <span class="seq-token protein">L</span>
+            <span class="seq-token protein">L</span>
+          </div>
+          <p style="text-align:center; color:var(--primary-light); margin:8px 0;">↓ 예측</p>
+          <div class="seq-viz">
+            <span class="seq-token protein">M</span>
+            <span class="seq-token protein" style="background:rgba(85,239,196,0.2); border-color:#55EFC4; color:#55EFC4;">A ✓</span>
+            <span class="seq-token protein">L</span>
+            <span class="seq-token protein">W</span>
+            <span class="seq-token protein" style="background:rgba(85,239,196,0.2); border-color:#55EFC4; color:#55EFC4;">K ✓</span>
+            <span class="seq-token protein">R</span>
+            <span class="seq-token protein">L</span>
+            <span class="seq-token protein">L</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h3 style="color:var(--primary-light); margin-bottom:15px;">대표 모델</h3>
+        <table class="comp-table">
+          <thead>
+            <tr><th>모델</th><th>파라미터</th><th>학습 데이터</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>ESM-1b</td><td>650M</td><td>UniRef50 (27M 서열)</td></tr>
+            <tr><td>ESM-2</td><td>15B</td><td>UniRef50</td></tr>
+            <tr><td>ProtTrans-T5</td><td>3B</td><td>UniRef50 + BFD</td></tr>
+            <tr><td>ESM3</td><td>98B</td><td>서열 + 구조 + 기능</td></tr>
+          </tbody>
+        </table>
+        <div class="card" style="margin-top:15px;">
+          <h3>할 수 있는 것들</h3>
+          <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;">
+            <span class="tag tag-teal">구조 예측</span>
+            <span class="tag tag-purple">기능 예측</span>
+            <span class="tag tag-pink">변이 효과 예측</span>
+            <span class="tag tag-teal">단백질 설계</span>
+            <span class="tag tag-purple">접촉 맵 추출</span>
+            <span class="tag tag-pink">진화 분석</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SLIDE 14: ALPHAFOLD ============ -->
+<div class="slide" data-title="AlphaFold" data-section="bio">
+  <div class="slide-content">
+    <h2 class="slide-title"><span class="highlight">AlphaFold</span> — 구조 예측 혁명</h2>
+    <p class="slide-subtitle">단백질 접힘 문제의 50년 역사를 끝낸 AI</p>
+    <div class="two-col">
+      <div>
+        <h3 style="color:var(--secondary); margin-bottom:15px;">Evoformer: AlphaFold의 핵심</h3>
+        <div class="diagram-box" style="font-size:13px;">
+          <div class="flow-row">
+            <div class="flow-box encoder">MSA Representation<br><span style="font-size:11px;">다중 서열 정렬</span></div>
+            <div class="flow-arrow" style="font-size:28px;">⟷</div>
+            <div class="flow-box decoder">Pair Representation<br><span style="font-size:11px;">잔기 쌍 관계</span></div>
+          </div>
+          <div style="margin:10px 0; font-size:11px; color:rgba(255,255,255,0.5);">↕ 정보 교환 (48 블록 반복) ↕</div>
+          <div class="flow-row">
+            <div class="flow-box attention">Row-wise<br>Self-Attn</div>
+            <div class="flow-box attention">Column-wise<br>Self-Attn</div>
+            <div class="flow-box attention">Triangle<br>Attention</div>
+          </div>
+          <div class="flow-arrow" style="font-size:28px;">↓</div>
+          <div class="flow-row">
+            <div class="flow-box" style="background:rgba(85,239,196,0.2); border-color:rgba(85,239,196,0.4);">Structure Module → 3D 좌표</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h3 style="color:var(--primary-light); margin-bottom:15px;">핵심 혁신</h3>
+        <div class="card" style="margin-bottom:12px;">
+          <h3>1. Triangle Attention</h3>
+          <p>잔기 A-B, B-C의 관계로부터 A-C의 관계를 추론. 3D 공간의 <strong>삼각 부등식</strong>을 네트워크에 내재화.</p>
+        </div>
+        <div class="card" style="margin-bottom:12px;">
+          <h3>2. MSA ↔ Pair 정보 교환</h3>
+          <p>진화적 정보(MSA)와 구조적 정보(Pair)가 서로를 <strong>반복적으로 정제</strong>.</p>
+        </div>
+        <div class="card">
+          <h3>3. End-to-End 학습</h3>
+          <p>서열 → 3D 좌표를 <strong>하나의 네트워크</strong>에서 직접 예측. 별도의 에너지 최소화 불필요.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SLIDE 15: GENOMICS ============ -->
+<div class="slide" data-title="유전체학 응용" data-section="bio">
+  <div class="slide-content">
+    <h2 class="slide-title">유전체학 <span class="highlight">(Genomics)</span> 응용</h2>
+    <p class="slide-subtitle">DNA/RNA 서열을 이해하는 Transformer 모델들</p>
+    <div class="card-grid cols-2">
+      <div class="card">
+        <span class="card-icon">🧬</span>
+        <h3>DNABERT / DNABERT-2</h3>
+        <p>DNA 서열을 k-mer로 토큰화하여 BERT 스타일로 학습. 프로모터 인식, 스플라이스 사이트 예측 등에 활용.</p>
+        <div style="margin-top:10px;">
+          <span class="tag tag-teal">프로모터 예측</span>
+          <span class="tag tag-purple">변이 효과</span>
+        </div>
+      </div>
+      <div class="card">
+        <span class="card-icon">🌍</span>
+        <h3>Nucleotide Transformer</h3>
+        <p>InstaDeep/Google의 2.5B 파라미터 DNA 모델. 18개 다운스트림 태스크에서 SOTA 달성.</p>
+        <div style="margin-top:10px;">
+          <span class="tag tag-pink">인핸서 예측</span>
+          <span class="tag tag-teal">종 분류</span>
+        </div>
+      </div>
+      <div class="card">
+        <span class="card-icon">🔬</span>
+        <h3>Enformer</h3>
+        <p>DeepMind. DNA 서열 → <strong>유전자 발현량</strong> 예측. 200kb 범위의 장거리 조절 요소 포착.</p>
+        <div style="margin-top:10px;">
+          <span class="tag tag-purple">유전자 발현</span>
+          <span class="tag tag-pink">조절 요소</span>
+        </div>
+      </div>
+      <div class="card">
+        <span class="card-icon">🧪</span>
+        <h3>Evo</h3>
+        <p>Arc Institute. 7B 파라미터. DNA, RNA, 단백질을 <strong>단일 모델</strong>로 학습. 유전자 수준의 기능 예측.</p>
+        <div style="margin-top:10px;">
+          <span class="tag tag-teal">멀티모달</span>
+          <span class="tag tag-purple">생성 모델</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SLIDE 16: COMPARISON TABLE ============ -->
+<div class="slide" data-title="RNN vs Transformer 비교" data-section="bio">
+  <div class="slide-content">
+    <h2 class="slide-title">RNN vs <span class="highlight">Transformer</span> — 생물정보학 관점</h2>
+    <p class="slide-subtitle">왜 Transformer가 서열 분석의 새로운 표준이 되었는가</p>
+    <div style="overflow-x:auto;">
+      <table class="comp-table">
+        <thead>
+          <tr><th>특성</th><th>RNN / LSTM</th><th>Transformer</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>장거리 의존성</td>
+            <td class="bad">✗ 먼 거리에서 정보 손실 (기울기 소실)</td>
+            <td class="good">✓ Self-Attention으로 모든 거리를 동등하게 처리</td>
+          </tr>
+          <tr>
+            <td>병렬 처리</td>
+            <td class="bad">✗ 순차 처리 → GPU 활용 제한</td>
+            <td class="good">✓ 모든 위치 동시 계산 → GPU 최적</td>
+          </tr>
+          <tr>
+            <td>학습 속도</td>
+            <td class="bad">✗ 긴 서열에서 매우 느림</td>
+            <td class="good">✓ 대규모 데이터를 빠르게 학습</td>
+          </tr>
+          <tr>
+            <td>해석 가능성</td>
+            <td class="bad">✗ 은닉 상태 해석 어려움</td>
+            <td class="good">✓ Attention weight로 관계 시각화 가능</td>
+          </tr>
+          <tr>
+            <td>서열 길이 한계</td>
+            <td>이론적 무한 (실전적으로 ~1000)</td>
+            <td class="bad">✗ O(n²) 메모리 → 긴 유전체에 한계*</td>
+          </tr>
+          <tr>
+            <td>사전 학습 (Pre-training)</td>
+            <td class="bad">✗ 구조적으로 어려움</td>
+            <td class="good">✓ MLM, CLM 등 자연스러운 사전 학습</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="anno" style="margin-top:15px;">
+      * Linformer, Flash Attention, Mamba 등으로 O(n²) 문제를 해결하는 연구가 활발히 진행 중
+    </p>
+  </div>
+</div>
+
+<!-- ============ SLIDE 17: SECTION — HANDS-ON ============ -->
+<div class="slide section-slide" data-title="Part 3: 실습과 퀴즈" data-section="practice">
+  <div class="slide-content">
+    <div class="section-number">03</div>
+    <h2 class="slide-title"><span class="highlight">실습</span>과 퀴즈</h2>
+    <p class="slide-subtitle">배운 내용을 확인하고 코드로 실습해보기</p>
+  </div>
+</div>
+
+<!-- ============ SLIDE 18: CODE EXAMPLE ============ -->
+<div class="slide" data-title="PyTorch 구현 실습" data-section="practice">
+  <div class="slide-content">
+    <h2 class="slide-title">Self-Attention <span class="highlight">PyTorch 구현</span></h2>
+    <p class="slide-subtitle">핵심 코드를 직접 작성해보기</p>
+    <div class="two-col">
+      <div>
+        <div class="code-block" style="font-size:13px;">
+<span class="keyword">import</span> torch
+<span class="keyword">import</span> torch.nn <span class="keyword">as</span> nn
+<span class="keyword">import</span> torch.nn.functional <span class="keyword">as</span> F
+
+<span class="keyword">class</span> <span class="func">SelfAttention</span>(nn.Module):
+    <span class="keyword">def</span> <span class="func">__init__</span>(self, d_model, n_heads):
+        <span class="func">super</span>().__init__()
+        self.d_k = d_model // n_heads
+        self.n_heads = n_heads
+
+        <span class="comment"># Q, K, V 투영 행렬</span>
+        self.W_q = nn.<span class="func">Linear</span>(d_model, d_model)
+        self.W_k = nn.<span class="func">Linear</span>(d_model, d_model)
+        self.W_v = nn.<span class="func">Linear</span>(d_model, d_model)
+        self.W_o = nn.<span class="func">Linear</span>(d_model, d_model)
+
+    <span class="keyword">def</span> <span class="func">forward</span>(self, x):
+        B, L, D = x.shape
+        <span class="comment"># Multi-head 분리</span>
+        Q = self.W_q(x).view(B,L,self.n_heads,self.d_k)
+        K = self.W_k(x).view(B,L,self.n_heads,self.d_k)
+        V = self.W_v(x).view(B,L,self.n_heads,self.d_k)
+
+        Q, K, V = [t.transpose(1,2) <span class="keyword">for</span> t <span class="keyword">in</span> (Q,K,V)]
+
+        <span class="comment"># Scaled dot-product attention</span>
+        scores = Q @ K.transpose(-2,-1) / self.d_k**<span class="number">0.5</span>
+        attn = F.<span class="func">softmax</span>(scores, dim=-<span class="number">1</span>)
+        out = attn @ V
+
+        <span class="comment"># Head 합치기</span>
+        out = out.transpose(1,2).reshape(B,L,D)
+        <span class="keyword">return</span> self.<span class="func">W_o</span>(out)
+        </div>
+      </div>
+      <div>
+        <h3 style="color:var(--secondary); margin-bottom:15px;">코드 해설</h3>
+        <div class="card" style="margin-bottom:12px;">
+          <h3>1. 투영 (Projection)</h3>
+          <p>입력 x를 W_q, W_k, W_v로 변환하여 Q, K, V 생성. 각 행렬은 d_model × d_model 크기.</p>
+        </div>
+        <div class="card" style="margin-bottom:12px;">
+          <h3>2. Multi-Head 분리</h3>
+          <p>d_model을 n_heads 개로 분할. 예: 768 = 12 heads × 64 dim. 각 head가 독립적으로 attention 수행.</p>
+        </div>
+        <div class="card" style="margin-bottom:12px;">
+          <h3>3. Attention 계산</h3>
+          <p>QK^T / √d_k → softmax → × V. 행렬 연산으로 효율적 병렬 처리.</p>
+        </div>
+        <div class="card">
+          <h3>4. 출력 투영</h3>
+          <p>모든 head의 결과를 concat 후 W_o로 투영하여 최종 출력 생성.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SLIDE 19: ESM HANDS-ON ============ -->
+<div class="slide" data-title="ESM 실습 코드" data-section="practice">
+  <div class="slide-content">
+    <h2 class="slide-title">ESM-2 <span class="highlight">실습 코드</span></h2>
+    <p class="slide-subtitle">단백질 서열의 임베딩을 추출하고 활용하기</p>
+    <div class="two-col">
+      <div>
+        <h3 style="color:var(--secondary); margin-bottom:15px;">임베딩 추출</h3>
+        <div class="code-block" style="font-size:13px;">
+<span class="comment"># pip install fair-esm</span>
+<span class="keyword">import</span> torch
+<span class="keyword">import</span> esm
+
+<span class="comment"># 1. 모델 로드</span>
+model, alphabet = esm.<span class="func">pretrained</span>.esm2_t33_650M_UR50D()
+batch_converter = alphabet.<span class="func">get_batch_converter</span>()
+model.<span class="func">eval</span>()
+
+<span class="comment"># 2. 서열 입력</span>
+data = [
+  (<span class="string">"protein1"</span>, <span class="string">"MKTAYIAKQRQISFVK"</span>),
+  (<span class="string">"protein2"</span>, <span class="string">"MALWKRLLPLLALLAL"</span>),
+]
+
+batch_labels, batch_strs, batch_tokens = \
+    <span class="func">batch_converter</span>(data)
+
+<span class="comment"># 3. 임베딩 추출</span>
+<span class="keyword">with</span> torch.<span class="func">no_grad</span>():
+    results = <span class="func">model</span>(
+        batch_tokens,
+        repr_layers=[<span class="number">33</span>],  <span class="comment"># 마지막 층</span>
+        return_contacts=<span class="keyword">True</span>
+    )
+
+<span class="comment"># 4. 결과 활용</span>
+embeddings = results[<span class="string">"representations"</span>][<span class="number">33</span>]
+contacts = results[<span class="string">"contacts"</span>]
+<span class="comment"># embeddings shape: (2, seq_len, 1280)</span>
+<span class="comment"># contacts: 예측된 잔기 접촉 맵</span>
+        </div>
+      </div>
+      <div>
+        <h3 style="color:var(--primary-light); margin-bottom:15px;">활용 예시</h3>
+        <div class="card" style="margin-bottom:12px;">
+          <h3>🔬 기능 예측</h3>
+          <div class="code-block" style="font-size:12px; margin-top:8px;">
+<span class="comment"># 임베딩 → 분류기</span>
+classifier = nn.<span class="func">Linear</span>(<span class="number">1280</span>, num_classes)
+mean_emb = embeddings.mean(dim=<span class="number">1</span>)
+logits = <span class="func">classifier</span>(mean_emb)
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:12px;">
+          <h3>🧬 변이 효과 예측</h3>
+          <p style="font-size:13px; color:rgba(255,255,255,0.7);">
+            마스킹된 위치에 각 아미노산의 확률을 계산 → 야생형 대비 변이의 log-likelihood ratio로 변이 효과 점수화
+          </p>
+        </div>
+        <div class="card">
+          <h3>📊 접촉 맵 추출</h3>
+          <p style="font-size:13px; color:rgba(255,255,255,0.7);">
+            Attention weight에서 접촉 맵을 추출하여 3D 구조에 대한 정보 획득 (별도의 MSA 없이!)
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SLIDE 20: QUIZ 1 ============ -->
+<div class="slide" data-title="퀴즈 1" data-section="practice">
+  <div class="slide-content">
+    <h2 class="slide-title">퀴즈 <span class="highlight">1</span></h2>
+    <p class="slide-subtitle" style="margin-bottom:30px;">Self-Attention의 시간 복잡도는?</p>
+    <div style="max-width:700px;">
+      <button class="quiz-option" onclick="checkQuiz(this, false, 'q1')">A. O(n) — 서열 길이에 선형</button>
+      <button class="quiz-option" onclick="checkQuiz(this, false, 'q1')">B. O(n log n) — 분할 정복</button>
+      <button class="quiz-option" onclick="checkQuiz(this, true, 'q1')">C. O(n²) — 모든 쌍을 비교</button>
+      <button class="quiz-option" onclick="checkQuiz(this, false, 'q1')">D. O(n³) — 행렬 곱셈</button>
+      <div class="quiz-feedback" id="q1-feedback"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SLIDE 21: QUIZ 2 ============ -->
+<div class="slide" data-title="퀴즈 2" data-section="practice">
+  <div class="slide-content">
+    <h2 class="slide-title">퀴즈 <span class="highlight">2</span></h2>
+    <p class="slide-subtitle" style="margin-bottom:30px;">AlphaFold 2의 Evoformer에서 "Triangle Attention"이 하는 역할은?</p>
+    <div style="max-width:700px;">
+      <button class="quiz-option" onclick="checkQuiz(this, false, 'q2')">A. 서열을 3개의 토큰 단위로 분할하여 처리</button>
+      <button class="quiz-option" onclick="checkQuiz(this, true, 'q2')">B. 잔기 A-B, B-C의 관계로부터 A-C의 관계를 추론</button>
+      <button class="quiz-option" onclick="checkQuiz(this, false, 'q2')">C. 3개의 attention head만 사용하여 효율성 극대화</button>
+      <button class="quiz-option" onclick="checkQuiz(this, false, 'q2')">D. 삼각형 모양의 마스킹 패턴을 적용</button>
+      <div class="quiz-feedback" id="q2-feedback"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SLIDE 22: QUIZ 3 ============ -->
+<div class="slide" data-title="퀴즈 3" data-section="practice">
+  <div class="slide-content">
+    <h2 class="slide-title">퀴즈 <span class="highlight">3</span></h2>
+    <p class="slide-subtitle" style="margin-bottom:30px;">ESM과 같은 단백질 언어 모델에서 Attention weight가 알려주는 생물학적 정보는?</p>
+    <div style="max-width:700px;">
+      <button class="quiz-option" onclick="checkQuiz(this, false, 'q3')">A. 단백질의 분자량</button>
+      <button class="quiz-option" onclick="checkQuiz(this, false, 'q3')">B. mRNA의 이차 구조</button>
+      <button class="quiz-option" onclick="checkQuiz(this, true, 'q3')">C. 3D 공간에서의 잔기 간 접촉 (Contact Map)</button>
+      <button class="quiz-option" onclick="checkQuiz(this, false, 'q3')">D. 유전자의 발현량</button>
+      <div class="quiz-feedback" id="q3-feedback"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SLIDE 23: ADVANCED TOPICS ============ -->
+<div class="slide" data-title="최신 동향" data-section="advanced">
+  <div class="slide-content">
+    <h2 class="slide-title"><span class="highlight">최신 동향</span>과 미래 방향</h2>
+    <p class="slide-subtitle">Transformer를 넘어서: 생물정보학 AI의 프론티어</p>
+    <div class="card-grid cols-2">
+      <div class="card">
+        <span class="card-icon">⚡</span>
+        <h3>효율적 Attention</h3>
+        <p><strong>Flash Attention, Linear Attention</strong> — O(n²) 메모리 문제를 해결하여 전체 유전체 수준의 입력 처리 가능</p>
+        <div class="bio-example" style="margin-top:10px;"><strong>Hyena, Mamba</strong> — Attention 없이 긴 서열 처리가 가능한 SSM(State Space Model) 기반 아키텍처</div>
+      </div>
+      <div class="card">
+        <span class="card-icon">🎨</span>
+        <h3>생성형 생물 AI</h3>
+        <p>서열을 이해하는 것을 넘어 <strong>새로운 단백질/DNA를 설계</strong>. 신약 개발, 효소 공학에 혁명적 변화.</p>
+        <div style="margin-top:10px;">
+          <span class="tag tag-teal">RFdiffusion</span>
+          <span class="tag tag-purple">ProtGPT2</span>
+          <span class="tag tag-pink">ESM3</span>
+        </div>
+      </div>
+      <div class="card">
+        <span class="card-icon">🌐</span>
+        <h3>멀티모달 모델</h3>
+        <p>서열 + 구조 + 기능 + 텍스트를 하나의 모델에서 통합 학습. <strong>AlphaFold 3</strong>은 단백질뿐 아니라 DNA, RNA, 리간드까지 복합체 구조 예측.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">🧫</span>
+        <h3>단일 세포 Transformer</h3>
+        <p><strong>scGPT, Geneformer</strong> — 단일 세포 RNA-seq 데이터를 Transformer로 분석. 세포 유형 분류, 유전자 네트워크 추론에 활용.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SLIDE 24: SUMMARY ============ -->
+<div class="slide" data-title="요약" data-section="summary">
+  <div class="slide-content">
+    <h2 class="slide-title"><span class="highlight">핵심 요약</span></h2>
+    <p class="slide-subtitle">오늘 배운 내용을 정리합니다</p>
+    <div class="card-grid cols-2">
+      <div class="card">
+        <h3>1. Transformer 아키텍처</h3>
+        <ul class="styled-list">
+          <li><strong>Self-Attention</strong>: 모든 위치 쌍의 관련성을 계산</li>
+          <li><strong>Multi-Head</strong>: 다양한 관계 유형을 동시에 포착</li>
+          <li><strong>위치 인코딩</strong>: 순서 정보를 벡터에 주입</li>
+          <li><strong>FFN + 잔차 연결</strong>: 특징 추출과 학습 안정화</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>2. 생물정보학 응용</h3>
+        <ul class="styled-list">
+          <li><strong>단백질 언어 모델</strong>: ESM, ProtTrans (MLM 학습)</li>
+          <li><strong>구조 예측</strong>: AlphaFold (Evoformer)</li>
+          <li><strong>유전체</strong>: DNABERT, Enformer, Evo</li>
+          <li><strong>단일 세포</strong>: scGPT, Geneformer</li>
+        </ul>
+      </div>
+    </div>
+    <div class="diagram-box" style="margin-top:25px; text-align:center;">
+      <p style="font-size:18px; font-weight:600; color:var(--primary-light); margin-bottom:10px;">Take-Home Message</p>
+      <p style="font-size:16px; line-height:1.8; color:rgba(255,255,255,0.8);">
+        Transformer는 <strong>서열을 이해하는 범용 엔진</strong>이다.<br>
+        자연어든, DNA든, 단백질이든 — "Attention Is All You Need."<br>
+        생물정보학자가 Transformer를 이해하는 것은 선택이 아닌 <strong style="color:#55EFC4;">필수</strong>다.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SLIDE 25: RESOURCES ============ -->
+<div class="slide" data-title="참고 자료" data-section="summary">
+  <div class="slide-content" style="text-align:center;">
+    <h2 class="slide-title"><span class="highlight">참고 자료</span> & 더 배우기</h2>
+    <div class="card-grid cols-3" style="text-align:left; margin-top:30px;">
+      <div class="card">
+        <span class="card-icon">📄</span>
+        <h3>핵심 논문</h3>
+        <ul class="styled-list" style="font-size:13px;">
+          <li>Vaswani et al. (2017) — Attention Is All You Need</li>
+          <li>Rives et al. (2021) — ESM</li>
+          <li>Jumper et al. (2021) — AlphaFold 2</li>
+          <li>Lin et al. (2023) — ESMFold</li>
+          <li>Ji et al. (2021) — DNABERT</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="card-icon">💻</span>
+        <h3>코드 & 도구</h3>
+        <ul class="styled-list" style="font-size:13px;">
+          <li>github.com/facebookresearch/esm</li>
+          <li>github.com/google-deepmind/alphafold</li>
+          <li>huggingface.co/facebook/esm2*</li>
+          <li>colab.research.google.com</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="card-icon">📚</span>
+        <h3>학습 자료</h3>
+        <ul class="styled-list" style="font-size:13px;">
+          <li>Jay Alammar — The Illustrated Transformer</li>
+          <li>3Blue1Brown — Attention in Transformers</li>
+          <li>Stanford CS224N — NLP with Deep Learning</li>
+          <li>MIT 6.S897 — ML for Drug Discovery</li>
+        </ul>
+      </div>
+    </div>
+    <div style="margin-top:40px;">
+      <p style="font-size:24px; font-weight:700; color:var(--primary-light);">감사합니다! 🧬</p>
+      <p style="font-size:14px; color:rgba(255,255,255,0.4); margin-top:10px;">질문이 있으시면 편하게 물어보세요</p>
+    </div>
+  </div>
+</div>
+
+</div> <!-- slides-container end -->
+
+<script>
+// ==================== SLIDE NAVIGATION ====================
+let currentSlide = 0;
+const slides = document.querySelectorAll('.slide');
+const totalSlides = slides.length;
+
+function updateSlide() {
+  slides.forEach((s, i) => {
+    s.classList.remove('active', 'exit-left');
+    if (i < currentSlide) s.classList.add('exit-left');
+    else if (i === currentSlide) s.classList.add('active');
+  });
+  document.getElementById('progress-bar').style.width = ((currentSlide / (totalSlides - 1)) * 100) + '%';
+  document.getElementById('slide-counter').textContent = (currentSlide + 1) + ' / ' + totalSlides;
+  updateTOC();
+}
+
+function changeSlide(dir) {
+  const next = currentSlide + dir;
+  if (next >= 0 && next < totalSlides) {
+    currentSlide = next;
+    updateSlide();
+  }
+}
+
+function goToSlide(n) {
+  currentSlide = n;
+  updateSlide();
+  closeTOC();
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); changeSlide(1); }
+  else if (e.key === 'ArrowLeft') { e.preventDefault(); changeSlide(-1); }
+  else if (e.key === 'Escape') closeTOC();
+});
+
+// Touch support
+let touchStartX = 0;
+document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
+document.addEventListener('touchend', e => {
+  const diff = touchStartX - e.changedTouches[0].screenX;
+  if (Math.abs(diff) > 60) changeSlide(diff > 0 ? 1 : -1);
+});
+
+// ==================== TABLE OF CONTENTS ====================
+function buildTOC() {
+  const list = document.getElementById('toc-list');
+  let currentSection = '';
+  const sectionNames = {
+    intro: '도입',
+    architecture: '아키텍처',
+    attention: 'Attention 메커니즘',
+    bio: '생물정보학 응용',
+    practice: '실습과 퀴즈',
+    advanced: '최신 동향',
+    summary: '요약'
+  };
+
+  slides.forEach((slide, i) => {
+    const section = slide.dataset.section;
+    if (section !== currentSection) {
+      currentSection = section;
+      const div = document.createElement('div');
+      div.className = 'toc-section';
+      div.textContent = sectionNames[section] || section;
+      list.appendChild(div);
+    }
+    const btn = document.createElement('button');
+    btn.className = 'toc-item';
+    btn.textContent = (i + 1) + '. ' + slide.dataset.title;
+    btn.onclick = () => goToSlide(i);
+    btn.dataset.index = i;
+    list.appendChild(btn);
+  });
+}
+
+function updateTOC() {
+  document.querySelectorAll('.toc-item').forEach(item => {
+    item.classList.toggle('active', parseInt(item.dataset.index) === currentSlide);
+  });
+}
+
+function toggleTOC() {
+  document.getElementById('toc-panel').classList.toggle('open');
+}
+function closeTOC() {
+  document.getElementById('toc-panel').classList.remove('open');
+}
+
+// ==================== INTERACTIVE ATTENTION DEMO ====================
+const gfpSeq = ['M', 'S', 'K', 'G', 'E', 'E', 'L', 'F', 'T', 'G', 'V', 'V'];
+const attnData = {
+  'M': [0.02, 0.05, 0.08, 0.03, 0.15, 0.12, 0.18, 0.05, 0.04, 0.08, 0.10, 0.10],
+  'S': [0.10, 0.02, 0.15, 0.05, 0.08, 0.08, 0.05, 0.12, 0.10, 0.08, 0.07, 0.10],
+  'K': [0.05, 0.12, 0.02, 0.04, 0.25, 0.20, 0.03, 0.05, 0.08, 0.04, 0.06, 0.06],
+  'G': [0.08, 0.06, 0.04, 0.02, 0.06, 0.08, 0.15, 0.12, 0.10, 0.12, 0.08, 0.09],
+  'E': [0.03, 0.08, 0.22, 0.05, 0.02, 0.15, 0.05, 0.08, 0.10, 0.07, 0.08, 0.07],
+  'L': [0.12, 0.05, 0.03, 0.15, 0.05, 0.04, 0.02, 0.20, 0.06, 0.12, 0.08, 0.08],
+  'F': [0.05, 0.10, 0.05, 0.10, 0.08, 0.06, 0.18, 0.02, 0.08, 0.10, 0.10, 0.08],
+  'T': [0.04, 0.08, 0.08, 0.10, 0.10, 0.08, 0.05, 0.08, 0.02, 0.15, 0.12, 0.10],
+  'V': [0.08, 0.06, 0.05, 0.12, 0.07, 0.08, 0.10, 0.10, 0.12, 0.05, 0.02, 0.15],
+};
+
+const attnExplain = {
+  'M': 'Met(M)은 시작 코돈의 아미노산으로, 서열 중앙의 소수성 잔기(L, F)에 강한 attention을 보냅니다. → 소수성 코어 형성 관련.',
+  'S': 'Ser(S)는 친수성 잔기로, Lys(K)와 Thr(T)에 높은 attention. → 수소 결합 네트워크 파트너.',
+  'K': 'Lys(K)는 양전하 잔기로, 음전하 Glu(E)들에 매우 높은 attention. → 염다리(salt bridge) 상호작용!',
+  'G': 'Gly(G)는 가장 작은 잔기로, Leu(L)과 Phe(F)에 attention. → 구조적 유연성 제공.',
+  'E': 'Glu(E)는 음전하 잔기로, Lys(K)에 가장 높은 attention. → K-E 염다리를 형성.',
+  'L': 'Leu(L)는 소수성 잔기로, Met(M)과 Phe(F)에 attention. → 소수성 코어 패킹.',
+  'F': 'Phe(F)는 방향족 잔기로, Leu(L)에 강한 attention. → 소수성 + π-stacking 상호작용.',
+  'T': 'Thr(T)는 극성 잔기로, Gly(G)와 Val(V)에 attention. → β-시트 구조 형성 경향.',
+  'V': 'Val(V)는 소수성 β-branched 잔기로, Gly(G)와 다른 Val에 attention. → β-시트 선호.',
+};
+
+function initAttentionDemo() {
+  const seqDiv = document.getElementById('attn-seq');
+  gfpSeq.forEach((aa, i) => {
+    const span = document.createElement('span');
+    span.className = 'seq-token protein';
+    span.textContent = aa;
+    span.onclick = () => showAttention(aa, i);
+    seqDiv.appendChild(span);
+  });
+}
+
+function showAttention(aa, idx) {
+  // Highlight selected token
+  document.querySelectorAll('#attn-seq .seq-token').forEach((t, i) => {
+    t.classList.toggle('highlighted', i === idx);
+  });
+
+  const weights = attnData[aa] || attnData['M'];
+  const maxW = Math.max(...weights);
+
+  // Draw bars
+  const barsDiv = document.getElementById('attn-bars');
+  barsDiv.innerHTML = '';
+  weights.forEach((w, i) => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex; align-items:center; gap:8px; margin:3px 0;';
+    const label = document.createElement('span');
+    label.style.cssText = 'width:24px; font-family:Fira Code; font-size:13px; color:var(--accent); text-align:right;';
+    label.textContent = gfpSeq[i];
+    const barBg = document.createElement('div');
+    barBg.style.cssText = 'flex:1; height:18px; background:rgba(255,255,255,0.05); border-radius:4px; overflow:hidden;';
+    const bar = document.createElement('div');
+    const pct = (w / maxW) * 100;
+    bar.style.cssText = `width:${pct}%; height:100%; border-radius:4px; transition:width 0.5s;`;
+    bar.style.background = i === idx ? 'var(--accent)' : `rgba(108,92,231,${0.3 + w * 2})`;
+    barBg.appendChild(bar);
+    const val = document.createElement('span');
+    val.style.cssText = 'width:36px; font-family:Fira Code; font-size:11px; color:rgba(255,255,255,0.5);';
+    val.textContent = w.toFixed(2);
+    row.appendChild(label);
+    row.appendChild(barBg);
+    row.appendChild(val);
+    barsDiv.appendChild(row);
+  });
+
+  // Explanation
+  document.getElementById('attn-explain').innerHTML = attnExplain[aa] || '';
+}
+
+// ==================== MULTI-HEAD VISUALIZATION ====================
+function initMultiHead() {
+  const viz = document.getElementById('multihead-viz');
+  const headNames = [
+    'Head 1\n수소 결합', 'Head 2\n소수성', 'Head 3\n정전기', 'Head 4\n근접 잔기',
+    'Head 5\n이차 구조', 'Head 6\n보존 패턴', 'Head 7\n표면 잔기', 'Head 8\n활성 부위'
+  ];
+  const patterns = [
+    [[1,.3,.1,.8],[.3,1,.7,.2],[.1,.7,1,.3],[.8,.2,.3,1]],
+    [[1,.8,.7,.2],[.8,1,.9,.3],[.7,.9,1,.4],[.2,.3,.4,1]],
+    [[1,.1,.2,.9],[.1,1,.1,.2],[.2,.1,1,.1],[.9,.2,.1,1]],
+    [[1,.9,.2,.1],[.9,1,.8,.2],[.2,.8,1,.9],[.1,.2,.9,1]],
+    [[1,.5,.5,.5],[.5,1,.5,.5],[.5,.5,1,.5],[.5,.5,.5,1]],
+    [[1,.2,.8,.3],[.2,1,.3,.7],[.8,.3,1,.2],[.3,.7,.2,1]],
+    [[1,.4,.6,.4],[.4,1,.4,.6],[.6,.4,1,.4],[.4,.6,.4,1]],
+    [[1,.1,.1,.3],[.1,1,.8,.1],[.1,.8,1,.1],[.3,.1,.1,1]],
+  ];
+
+  headNames.forEach((name, h) => {
+    const card = document.createElement('div');
+    card.style.cssText = 'background:rgba(0,0,0,0.3); border:1px solid rgba(108,92,231,0.2); border-radius:10px; padding:10px; cursor:pointer; transition:all 0.3s;';
+    card.onmouseenter = () => { card.style.borderColor = 'rgba(108,92,231,0.6)'; card.style.transform = 'scale(1.05)'; };
+    card.onmouseleave = () => { card.style.borderColor = 'rgba(108,92,231,0.2)'; card.style.transform = 'scale(1)'; };
+
+    const title = document.createElement('div');
+    title.style.cssText = 'font-size:11px; color:var(--primary-light); margin-bottom:6px; white-space:pre-line; line-height:1.4;';
+    title.textContent = name;
+    card.appendChild(title);
+
+    const grid = document.createElement('div');
+    grid.style.cssText = 'display:grid; grid-template-columns:repeat(4,1fr); gap:2px;';
+    patterns[h].forEach(row => {
+      row.forEach(val => {
+        const cell = document.createElement('div');
+        const alpha = val * 0.8 + 0.1;
+        cell.style.cssText = `aspect-ratio:1; border-radius:2px; background:rgba(108,92,231,${alpha});`;
+        grid.appendChild(cell);
+      });
+    });
+    card.appendChild(grid);
+    viz.appendChild(card);
+  });
+}
+
+// ==================== QUIZ ====================
+function checkQuiz(btn, isCorrect, quizId) {
+  const feedback = document.getElementById(quizId + '-feedback');
+  const options = btn.parentElement.querySelectorAll('.quiz-option');
+  options.forEach(o => { o.disabled = true; o.style.pointerEvents = 'none'; });
+
+  if (isCorrect) {
+    btn.classList.add('correct');
+    feedback.style.display = 'block';
+    feedback.style.background = 'rgba(85,239,196,0.1)';
+    feedback.style.border = '1px solid rgba(85,239,196,0.3)';
+    if (quizId === 'q1') {
+      feedback.innerHTML = '<strong style="color:#55EFC4;">정답!</strong> Self-Attention은 모든 토큰 쌍을 비교하므로 O(n²)입니다. 서열 길이 n이 커지면 메모리와 계산량이 급격히 증가합니다. 이것이 긴 유전체 서열에서 Transformer의 주요 한계입니다.';
+    } else if (quizId === 'q2') {
+      feedback.innerHTML = '<strong style="color:#55EFC4;">정답!</strong> Triangle Attention은 3D 공간의 삼각 부등식을 반영합니다. 잔기 A가 B와 가깝고, B가 C와 가까우면, A와 C도 어느 정도 가깝다는 기하학적 제약을 네트워크에 주입합니다.';
+    } else if (quizId === 'q3') {
+      feedback.innerHTML = '<strong style="color:#55EFC4;">정답!</strong> Rao et al. (2021)은 ESM-1b의 attention weight가 단백질의 3D 접촉 맵과 높은 상관관계를 보임을 발견했습니다. 서열만으로 구조 정보를 암묵적으로 학습한 것입니다.';
+    }
+  } else {
+    btn.classList.add('wrong');
+    feedback.style.display = 'block';
+    feedback.style.background = 'rgba(255,118,117,0.1)';
+    feedback.style.border = '1px solid rgba(255,118,117,0.3)';
+    feedback.innerHTML = '<strong style="color:#FF7675;">오답!</strong> 다시 생각해보세요. 힌트를 확인하고 정답을 찾아보세요.';
+    // Re-enable after wrong answer
+    setTimeout(() => {
+      options.forEach(o => { if (!o.classList.contains('wrong')) { o.disabled = false; o.style.pointerEvents = 'auto'; }});
+    }, 1000);
+  }
+}
+
+// ==================== BACKGROUND ANIMATION ====================
+function initBgCanvas() {
+  const canvas = document.getElementById('bgCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const particles = [];
+  for (let i = 0; i < 60; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      r: Math.random() * 2 + 1,
+    });
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+      if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(108, 92, 231, 0.4)';
+      ctx.fill();
+    });
+    // Draw connections
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 150) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = `rgba(108, 92, 231, ${0.15 * (1 - dist / 150)})`;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+
+  window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  });
+}
+
+// ==================== INIT ====================
+buildTOC();
+initAttentionDemo();
+initMultiHead();
+initBgCanvas();
+updateSlide();
+</script>
+
+</body>
+</html>
