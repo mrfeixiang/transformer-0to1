@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Transformer: 생물정보학을 위한 완벽 가이드</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Fira+Code:wght@400;500&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Noto+Sans+SC:wght@300;400;500;700;900&family=Fira+Code:wght@400;500&display=swap');
 
   :root {
     --primary: #6C5CE7;
@@ -97,6 +97,35 @@
     transition: all 0.3s;
   }
   #toc-btn:hover { background: rgba(108, 92, 231, 0.7); }
+
+  /* Language Switcher */
+  #lang-switcher {
+    position: fixed;
+    top: 20px;
+    right: 120px;
+    display: flex;
+    gap: 4px;
+    z-index: 200;
+  }
+  .lang-btn {
+    background: rgba(108, 92, 231, 0.2);
+    border: 1px solid rgba(108, 92, 231, 0.3);
+    color: rgba(255,255,255,0.5);
+    padding: 6px 12px;
+    border-radius: 14px;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: 'Noto Sans KR', sans-serif;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s;
+    font-weight: 500;
+  }
+  .lang-btn:hover { background: rgba(108, 92, 231, 0.4); color: white; }
+  .lang-btn.active {
+    background: rgba(108, 92, 231, 0.6);
+    border-color: var(--primary);
+    color: white;
+  }
 
   #toc-panel {
     position: fixed;
@@ -710,7 +739,12 @@
 
 <button id="prev-btn" class="nav-btn" onclick="changeSlide(-1)">&#8249;</button>
 <button id="next-btn" class="nav-btn" onclick="changeSlide(1)">&#8250;</button>
-<button id="toc-btn" onclick="toggleTOC()">&#9776; 목차</button>
+<div id="lang-switcher">
+  <button class="lang-btn active" onclick="setLang('ko')">한국어</button>
+  <button class="lang-btn" onclick="setLang('zh')">中文</button>
+  <button class="lang-btn" onclick="setLang('en')">EN</button>
+</div>
+<button id="toc-btn" onclick="toggleTOC()">&#9776; <span data-i18n="toc">목차</span></button>
 
 <div id="toc-panel">
   <button id="toc-close" onclick="toggleTOC()">&times;</button>
@@ -2022,7 +2056,1089 @@ function initBgCanvas() {
   });
 }
 
+// ==================== I18N SYSTEM ====================
+const i18n = {
+  ko: {}, // Korean is the default in HTML, no mapping needed
+  en: {
+    // Nav & UI
+    "toc": "TOC",
+    "toc_title": "Table of Contents",
+    // Section names
+    "sec_intro": "Introduction",
+    "sec_architecture": "Architecture",
+    "sec_attention": "Attention Mechanism",
+    "sec_bio": "Bioinformatics Applications",
+    "sec_practice": "Practice & Quiz",
+    "sec_advanced": "Latest Trends",
+    "sec_summary": "Summary",
+    // Slide 0 - Title
+    "s0_badge": "Bioinformatics × Deep Learning",
+    "s0_title": "Transformer\nComplete Guide",
+    "s0_sub": 'From "Attention Is All You Need"\nto AlphaFold, ESM — Understanding Transformers for Bioinformatics',
+    "s0_hint": "Press Space or → to start",
+    // Slide 1
+    "s1_title": "Why Transformer?",
+    "s1_sub": "Why Transformers revolutionized bioinformatics",
+    "s1_c1t": "Sequences Are Language",
+    "s1_c1p": "DNA, RNA, and protein sequences are strings. NLP techniques can be directly applied.",
+    "s1_c2t": "Long-Range Dependencies",
+    "s1_c2p": "Contact residues in proteins are far apart in sequence but close in 3D space. Transformers capture this.",
+    "s1_c3t": "Parallel Processing",
+    "s1_c3p": "Unlike RNNs, all positions are processed simultaneously, making it suitable for large-scale genomic and protein data.",
+    // Slide 2 - Timeline
+    "s2_title": "History of Transformers & Bioinformatics",
+    "s2_t1": '"Attention Is All You Need" — Google Brain, first Transformer',
+    "s2_t2": "BERT / GPT — Pre-training paradigm established",
+    "s2_t3": "TAPE — Transformer benchmark for protein sequences",
+    "s2_t4": "AlphaFold 2 — Protein structure prediction revolution",
+    "s2_t5": "ESM-1b (Meta AI) — Language model trained on 600M protein sequences",
+    "s2_t6": "ESMFold, Evo, DNABERT-2 — Integrated genome/protein models",
+    "s2_t7": "AlphaFold 3, ESM3 — Multimodal biological AI",
+    "s2_insight_t": "Key Insight",
+    "s2_insight_p": "The Transformer, born in NLP, solved the 50-year grand challenge of structural biology (protein folding) in just 3 years.",
+    "s2_numbers_t": "By the Numbers",
+    "s2_numbers_p": "Predicted structures in AlphaFold DB",
+    // Slide 3 - Section
+    "s3_title": "Transformer Architecture",
+    "s3_sub": "Understanding core components one by one",
+    // Slide 4 - Overall Architecture
+    "s4_title": "Transformer Overall Architecture",
+    "s4_sub": "Hover over each block to see its description",
+    "s4_tip1": "Converts characters to numerical vectors",
+    "s4_tip2": "Encodes position info using sin/cos functions",
+    "s4_tip3": "Computes relevance between all input position pairs",
+    "s4_tip4": "Extracts features via nonlinear transformation",
+    "s4_tip5": "Self-Attention within output sequence (future masking)",
+    "s4_tip6": "Cross-Attention referencing Encoder output",
+    "s4_tip7": "Nonlinear transformation",
+    "s4_tip8": "Final probability distribution output",
+    "s4_enc": "Encoder × N",
+    "s4_dec": "Decoder × N",
+    "s4_res": "+ Add & LayerNorm (Residual Connection)",
+    // Slide 5 - Tokenization
+    "s5_title": "Tokenization & Embedding",
+    "s5_sub": "Sequence → Numerical Vectors: The First Step of Transformer",
+    "s5_bio_title": "Biological Sequence Tokenization",
+    "s5_bio_desc": "<strong>DNA:</strong> Each nucleotide (A, T, G, C) or k-mer units<br><strong>Protein:</strong> Each amino acid (20 types + special tokens)<br><strong>RNA:</strong> Each nucleotide (A, U, G, C)",
+    "s5_dna_label": "DNA sequence example (k-mer = 3):",
+    "s5_prot_label": "Protein sequence example:",
+    "s5_emb_title": "Embedding",
+    "s5_emb_desc": "Each token is converted to a high-dimensional vector (e.g., 768 dimensions).\nThrough training, semantically similar tokens acquire nearby vectors.",
+    // Slide 6 - Positional Encoding
+    "s6_title": "Positional Encoding",
+    "s6_why_title": "Why is it needed?",
+    "s6_why1": "RNN processes sequentially → position info is inherent",
+    "s6_why2": "Transformer sees all tokens simultaneously → no position info!",
+    "s6_why3": "Position matters in sequences: the same amino acid functions differently depending on its position",
+    "s6_math": "Mathematical Definition",
+    "s6_pe_note": "pos = position in sequence, i = dimension index, d = embedding dimension",
+    "s6_bio_title": "Bioinformatics Variants",
+    "s6_v1t": "Learnable Positional Encoding",
+    "s6_v1p": "ESM, ProtTrans use learnable parameters instead of sin/cos, optimized for protein sequence characteristics",
+    "s6_v2t": "Relative Position Encoding (RPE)",
+    "s6_v2p": "Used in AlphaFold. Encodes relative distance between residues instead of absolute position → better generalization across sequence lengths",
+    "s6_v3t": "Rotary Position Embedding (RoPE)",
+    "s6_v3p": "Adopted by latest models (ESM3 etc.). Naturally reflects relative position in dot products via rotation transformation",
+    // Slide 7 - Self-Attention Concept
+    "s7_title": "What is Self-Attention?",
+    "s7_sub": '"Which positions in this sequence are important to which other positions?" — a mechanism to compute this',
+    "s7_idea_title": "Core Idea",
+    "s7_idea1": "Each token computes its relevance (attention score) with all other tokens",
+    "s7_idea2": "More information is absorbed from highly relevant tokens",
+    "s7_idea3": "All pairs are compared at once, regardless of sequence length",
+    "s7_bio": "<strong>Biological Meaning:</strong> In protein sequences, Self-Attention automatically learns residue pairs that are close in 3D space (contact map). Attention weight ≈ inverse of inter-residue distance!",
+    "s7_qkv_title": "Query-Key-Value Analogy",
+    "s7_qkv_intro": "Finding a book in a library:",
+    "s7_q": '"Who does this residue want to interact with?" (search query)',
+    "s7_k": '"I am a residue with these properties" (book title)',
+    "s7_v": '"My actual information is this" (book content)',
+    "s7_qkv_note": "The higher the Q-K similarity, the greater the weight of that V.",
+    // Slide 8 - Attention Formula
+    "s8_title": "Scaled Dot-Product Attention",
+    "s8_c1t": "QK^T",
+    "s8_c1p": "Dot product of Query and Key → Similarity matrix (n×n)\nRelevance score for each token pair",
+    "s8_c2t": "Divide by √d_k",
+    "s8_c2p": "As dimensions grow, dot products grow too → softmax becomes extreme. Scaling stabilizes this",
+    "s8_c3t": "Softmax",
+    "s8_c3p": "Converts scores to a probability distribution. Sums to 1, enabling weighted averaging",
+    "s8_c4t": "× V",
+    "s8_c4p": "Weighted sum of Values using the probability distribution. Gathers more info from relevant positions",
+    "s8_step_title": "Step-by-Step Example",
+    "s8_note": "* Matrix multiplication enables massive parallel computation on GPUs",
+    // Slide 9 - Interactive Attention
+    "s9_title": "Attention Visualization — Interactive Demo",
+    "s9_sub": "Click an amino acid token to see its attention distribution",
+    "s9_seq_label": "Protein sequence (part of GFP):",
+    "s9_weights_label": "Attention Weights (selected residue → others):",
+    "s9_explain_label": "Interpretation:",
+    "s9_placeholder": "← Click an amino acid on the left",
+    // Slide 10 - Multi-Head
+    "s10_title": "Multi-Head Attention",
+    "s10_sub": "A mechanism that performs attention from multiple perspectives simultaneously",
+    "s10_why": "Why multiple heads?",
+    "s10_r1": "A single attention head captures only one type of relationship",
+    "s10_r2": "Proteins have multiple coexisting interaction types:",
+    "s10_r3": "Hydrogen bond patterns",
+    "s10_r4": "Hydrophobic interactions",
+    "s10_r5": "Electrostatic interactions",
+    "s10_r6": "Disulfide bonds (S-S bond)",
+    "s10_r7": "Each head learns different interactions!",
+    "s10_head_note": "Click each Head to see its attention pattern",
+    "s10_bio": "<strong>ESM-1b Discovery:</strong> Certain attention heads show high correlation with protein contact maps. Transformers implicitly learn 3D structure from sequence alone!",
+    // Head names
+    "head1": "Head 1\nH-bond", "head2": "Head 2\nHydrophobic", "head3": "Head 3\nElectrostatic", "head4": "Head 4\nProximal",
+    "head5": "Head 5\nSecondary", "head6": "Head 6\nConservation", "head7": "Head 7\nSurface", "head8": "Head 8\nActive site",
+    // Slide 11 - FFN
+    "s11_title": "FFN, Residual Connection, LayerNorm",
+    "s11_sub": "The remaining core components of a Transformer block",
+    "s11_c1t": "Feed-Forward Network (FFN)",
+    "s11_c1p": 'A 2-layer MLP applied independently to each position.\n\nFFN(x) = max(0, xW₁ + b₁)W₂ + b₂\nUsually d_ff = 4 × d_model (768 → 3072 → 768)\n\nAttention decides "where to look", FFN decides "what to extract".',
+    "s11_c2t": "Residual Connection",
+    "s11_c2p": "Adds input to output:\n\noutput = x + SubLayer(x)\n\nWhy? Prevents gradient vanishing in deep networks. Acts as an information 'highway'.",
+    "s11_c3t": "Layer Normalization",
+    "s11_c3p": "Normalizes to mean 0, variance 1 within each sample:\n\nLN(x) = γ · (x - μ) / σ + β\n\nStabilizes training and speeds convergence. Pre-LN vs Post-LN variants exist.",
+    "s11_block_label": "One Transformer block (Post-LN)",
+    // Slide 12 - Section Bio
+    "s12_title": "Bioinformatics Applications",
+    "s12_sub": "How Transformers solve fundamental problems in biology",
+    // Slide 13 - Protein LM
+    "s13_title": "Protein Language Models (Protein LM)",
+    "s13_sub": 'Like BERT for natural language, a model that "reads" protein sequences',
+    "s13_mlm_title": "Training Method: Masked Language Modeling",
+    "s13_mlm_desc": "Mask some amino acids with [MASK], and train to predict the original amino acid from context",
+    "s13_train_label": "Training example:",
+    "s13_models_title": "Representative Models",
+    "s13_can_title": "Capabilities",
+    "s13_caps": ["Structure prediction", "Function prediction", "Variant effect prediction", "Protein design", "Contact map extraction", "Evolutionary analysis"],
+    // Slide 14 - AlphaFold
+    "s14_title": "AlphaFold — Structure Prediction Revolution",
+    "s14_sub": "The AI that ended 50 years of the protein folding problem",
+    "s14_evo_title": "Evoformer: Core of AlphaFold",
+    "s14_i1t": "1. Triangle Attention",
+    "s14_i1p": "Infers A-C relationship from A-B and B-C relationships. Embeds the triangle inequality of 3D space into the network.",
+    "s14_i2t": "2. MSA ↔ Pair Information Exchange",
+    "s14_i2p": "Evolutionary information (MSA) and structural information (Pair) iteratively refine each other.",
+    "s14_i3t": "3. End-to-End Learning",
+    "s14_i3p": "Directly predicts sequence → 3D coordinates in a single network. No separate energy minimization needed.",
+    "s14_innov": "Key Innovations",
+    // Slide 15 - Genomics
+    "s15_title": "Genomics Applications",
+    "s15_c1t": "DNABERT / DNABERT-2",
+    "s15_c1p": "Tokenizes DNA sequences into k-mers and trains BERT-style. Used for promoter recognition, splice site prediction, etc.",
+    "s15_c2t": "Nucleotide Transformer",
+    "s15_c2p": "InstaDeep/Google's 2.5B parameter DNA model. Achieved SOTA on 18 downstream tasks.",
+    "s15_c3t": "Enformer",
+    "s15_c3p": "DeepMind. Predicts gene expression from DNA sequence. Captures long-range regulatory elements within 200kb range.",
+    "s15_c4t": "Evo",
+    "s15_c4p": "Arc Institute. 7B parameters. Trains DNA, RNA, and proteins in a single model. Gene-level function prediction.",
+    "s15_tags": {
+      "프로모터 예측": "Promoter prediction", "변이 효과": "Variant effects",
+      "인핸서 예측": "Enhancer prediction", "종 분류": "Species classification",
+      "유전자 발현": "Gene expression", "조절 요소": "Regulatory elements",
+      "멀티모달": "Multimodal", "생성 모델": "Generative model"
+    },
+    // Slide 16 - Comparison
+    "s16_title": "RNN vs Transformer — Bioinformatics Perspective",
+    "s16_sub": "Why Transformers became the new standard for sequence analysis",
+    "s16_h1": "Feature", "s16_h2": "RNN / LSTM", "s16_h3": "Transformer",
+    "s16_r1c1": "Long-range dependencies",
+    "s16_r1c2": "✗ Information loss over long distances (gradient vanishing)",
+    "s16_r1c3": "✓ All distances treated equally via Self-Attention",
+    "s16_r2c1": "Parallel processing",
+    "s16_r2c2": "✗ Sequential processing → limited GPU utilization",
+    "s16_r2c3": "✓ All positions computed simultaneously → GPU optimal",
+    "s16_r3c1": "Training speed",
+    "s16_r3c2": "✗ Very slow for long sequences",
+    "s16_r3c3": "✓ Fast training on large-scale data",
+    "s16_r4c1": "Interpretability",
+    "s16_r4c2": "✗ Hidden states hard to interpret",
+    "s16_r4c3": "✓ Attention weights enable relationship visualization",
+    "s16_r5c1": "Sequence length limit",
+    "s16_r5c2": "Theoretically infinite (practically ~1000)",
+    "s16_r5c3": "✗ O(n²) memory → limitations for long genomes*",
+    "s16_r6c1": "Pre-training",
+    "s16_r6c2": "✗ Structurally difficult",
+    "s16_r6c3": "✓ Natural pre-training with MLM, CLM, etc.",
+    "s16_note": "* Research on solving the O(n²) problem is active: Linformer, Flash Attention, Mamba, etc.",
+    // Slide 17 - Section Practice
+    "s17_title": "Practice & Quiz",
+    "s17_sub": "Verify what you've learned and practice with code",
+    // Slide 18 - PyTorch
+    "s18_title": "Self-Attention PyTorch Implementation",
+    "s18_sub": "Write the core code yourself",
+    "s18_explain_title": "Code Explanation",
+    "s18_e1t": "1. Projection",
+    "s18_e1p": "Transform input x into Q, K, V using W_q, W_k, W_v. Each matrix is d_model × d_model.",
+    "s18_e2t": "2. Multi-Head Split",
+    "s18_e2p": "Split d_model into n_heads. E.g.: 768 = 12 heads × 64 dim. Each head performs attention independently.",
+    "s18_e3t": "3. Attention Computation",
+    "s18_e3p": "QK^T / √d_k → softmax → × V. Efficient parallel processing via matrix operations.",
+    "s18_e4t": "4. Output Projection",
+    "s18_e4p": "Concat all head results, project through W_o for final output.",
+    // Slide 19 - ESM
+    "s19_title": "ESM-2 Hands-On Code",
+    "s19_sub": "Extract and utilize protein sequence embeddings",
+    "s19_emb_title": "Embedding Extraction",
+    "s19_use_title": "Use Cases",
+    "s19_u1t": "Function Prediction",
+    "s19_u2t": "Variant Effect Prediction",
+    "s19_u2p": "Calculate probability of each amino acid at masked positions → Score variant effects using log-likelihood ratio vs wild type",
+    "s19_u3t": "Contact Map Extraction",
+    "s19_u3p": "Extract contact maps from attention weights to obtain 3D structural information (without separate MSA!)",
+    // Quizzes
+    "q1_title": "Quiz 1",
+    "q1_q": "What is the time complexity of Self-Attention?",
+    "q1_a": "A. O(n) — Linear in sequence length",
+    "q1_b": "B. O(n log n) — Divide and conquer",
+    "q1_c": "C. O(n²) — Compare all pairs",
+    "q1_d": "D. O(n³) — Matrix multiplication",
+    "q1_correct": '<strong style="color:#55EFC4;">Correct!</strong> Self-Attention is O(n²) because it compares all token pairs. As sequence length n grows, memory and computation increase dramatically. This is the main limitation of Transformers for long genomic sequences.',
+    "q1_wrong": '<strong style="color:#FF7675;">Wrong!</strong> Think again. Check the hint and find the correct answer.',
+    "q2_title": "Quiz 2",
+    "q2_q": 'What role does "Triangle Attention" play in AlphaFold 2\'s Evoformer?',
+    "q2_a": "A. Splits the sequence into units of 3 tokens for processing",
+    "q2_b": "B. Infers A-C relationship from residue A-B and B-C relationships",
+    "q2_c": "C. Maximizes efficiency using only 3 attention heads",
+    "q2_d": "D. Applies a triangular masking pattern",
+    "q2_correct": '<strong style="color:#55EFC4;">Correct!</strong> Triangle Attention reflects the triangle inequality of 3D space. If residue A is close to B, and B is close to C, then A and C are also somewhat close — this geometric constraint is injected into the network.',
+    "q2_wrong": '<strong style="color:#FF7675;">Wrong!</strong> Think again. Check the hint and find the correct answer.',
+    "q3_title": "Quiz 3",
+    "q3_q": "What biological information do attention weights reveal in protein language models like ESM?",
+    "q3_a": "A. Molecular weight of the protein",
+    "q3_b": "B. Secondary structure of mRNA",
+    "q3_c": "C. Inter-residue contacts in 3D space (Contact Map)",
+    "q3_d": "D. Gene expression level",
+    "q3_correct": '<strong style="color:#55EFC4;">Correct!</strong> Rao et al. (2021) found that ESM-1b attention weights highly correlate with protein 3D contact maps. The model implicitly learns structural information from sequence alone.',
+    "q3_wrong": '<strong style="color:#FF7675;">Wrong!</strong> Think again. Check the hint and find the correct answer.',
+    // Slide 23 - Advanced
+    "s23_title": "Latest Trends & Future Directions",
+    "s23_sub": "Beyond Transformers: Frontiers of Bioinformatics AI",
+    "s23_c1t": "Efficient Attention",
+    "s23_c1p": '<strong>Flash Attention, Linear Attention</strong> — Solving the O(n²) memory problem for whole-genome-level input processing',
+    "s23_c1bio": "<strong>Hyena, Mamba</strong> — SSM (State Space Model) architectures that handle long sequences without attention",
+    "s23_c2t": "Generative Biological AI",
+    "s23_c2p": 'Beyond understanding sequences: <strong>designing new proteins/DNA</strong>. Revolutionary changes in drug development and enzyme engineering.',
+    "s23_c3t": "Multimodal Models",
+    "s23_c3p": "Unified training of sequence + structure + function + text. <strong>AlphaFold 3</strong> predicts complex structures including DNA, RNA, and ligands beyond proteins.",
+    "s23_c4t": "Single-Cell Transformers",
+    "s23_c4p": "<strong>scGPT, Geneformer</strong> — Analyzing single-cell RNA-seq data with Transformers. Used for cell type classification and gene network inference.",
+    // Summary
+    "s24_title": "Key Summary",
+    "s24_sub": "Summarizing what we learned today",
+    "s24_c1t": "1. Transformer Architecture",
+    "s24_c1l1": "<strong>Self-Attention</strong>: Computes relevance between all position pairs",
+    "s24_c1l2": "<strong>Multi-Head</strong>: Captures diverse relationship types simultaneously",
+    "s24_c1l3": "<strong>Positional Encoding</strong>: Injects order information into vectors",
+    "s24_c1l4": "<strong>FFN + Residual</strong>: Feature extraction and training stabilization",
+    "s24_c2t": "2. Bioinformatics Applications",
+    "s24_c2l1": "<strong>Protein LM</strong>: ESM, ProtTrans (MLM training)",
+    "s24_c2l2": "<strong>Structure prediction</strong>: AlphaFold (Evoformer)",
+    "s24_c2l3": "<strong>Genomics</strong>: DNABERT, Enformer, Evo",
+    "s24_c2l4": "<strong>Single-cell</strong>: scGPT, Geneformer",
+    "s24_msg_title": "Take-Home Message",
+    "s24_msg": 'The Transformer is a <strong>universal engine for understanding sequences</strong>.<br>Whether natural language, DNA, or proteins — "Attention Is All You Need."<br>Understanding Transformers is not optional for bioinformaticians — it\'s <strong style="color:#55EFC4;">essential</strong>.',
+    // Resources
+    "s25_title": "References & Further Learning",
+    "s25_c1t": "Key Papers",
+    "s25_c2t": "Code & Tools",
+    "s25_c3t": "Learning Resources",
+    "s25_thanks": "Thank you!",
+    "s25_questions": "Feel free to ask any questions",
+    // Attention demo explanations
+    "attn_M": "Met(M) is the start codon amino acid. It shows strong attention to hydrophobic residues (L, F) in the sequence center. → Related to hydrophobic core formation.",
+    "attn_S": "Ser(S) is a hydrophilic residue. High attention to Lys(K) and Thr(T). → Hydrogen bond network partners.",
+    "attn_K": "Lys(K) is a positively charged residue. Very high attention to negatively charged Glu(E). → Salt bridge interaction!",
+    "attn_G": "Gly(G) is the smallest residue. Attention to Leu(L) and Phe(F). → Provides structural flexibility.",
+    "attn_E": "Glu(E) is a negatively charged residue. Highest attention to Lys(K). → Forms K-E salt bridge.",
+    "attn_L": "Leu(L) is a hydrophobic residue. Attention to Met(M) and Phe(F). → Hydrophobic core packing.",
+    "attn_F": "Phe(F) is an aromatic residue. Strong attention to Leu(L). → Hydrophobic + π-stacking interaction.",
+    "attn_T": "Thr(T) is a polar residue. Attention to Gly(G) and Val(V). → Tends to form β-sheet structures.",
+    "attn_V": "Val(V) is a hydrophobic β-branched residue. Attention to Gly(G) and other Val. → Prefers β-sheets.",
+    // Key hints
+    "key_hints": "Navigate with <kbd>←</kbd> <kbd>→</kbd> or <kbd>Space</kbd>",
+  },
+  zh: {
+    // Nav & UI
+    "toc": "目录",
+    "toc_title": "目录",
+    // Section names
+    "sec_intro": "简介",
+    "sec_architecture": "架构",
+    "sec_attention": "注意力机制",
+    "sec_bio": "生物信息学应用",
+    "sec_practice": "实践与测验",
+    "sec_advanced": "最新趋势",
+    "sec_summary": "总结",
+    // Slide 0 - Title
+    "s0_badge": "生物信息学 × 深度学习",
+    "s0_title": "Transformer\n完全攻略",
+    "s0_sub": '从"Attention Is All You Need"到AlphaFold、ESM\n——生物信息学视角的Transformer理解',
+    "s0_hint": "按空格键或 → 开始",
+    // Slide 1
+    "s1_title": "为什么选择Transformer？",
+    "s1_sub": "Transformer在生物信息学中引发革命的原因",
+    "s1_c1t": "序列即语言",
+    "s1_c1p": "DNA、RNA和蛋白质序列都是字符串(sequence)。自然语言处理(NLP)技术可以直接应用。",
+    "s1_c2t": "长程依赖性",
+    "s1_c2p": "蛋白质中的接触残基在序列上距离遥远，但在3D空间中相邻。Transformer能够捕捉这种关系。",
+    "s1_c3t": "并行处理",
+    "s1_c3p": "与RNN不同，所有位置可以同时处理，适合大规模基因组和蛋白质数据。",
+    // Slide 2 - Timeline
+    "s2_title": "Transformer的历史与生物信息学",
+    "s2_t1": '"Attention Is All You Need" — Google Brain，首次提出Transformer',
+    "s2_t2": "BERT / GPT — 预训练范式确立",
+    "s2_t3": "TAPE — 蛋白质序列的Transformer基准测试",
+    "s2_t4": "AlphaFold 2 — 蛋白质结构预测革命",
+    "s2_t5": "ESM-1b (Meta AI) — 基于6亿条蛋白质序列训练的语言模型",
+    "s2_t6": "ESMFold、Evo、DNABERT-2 — 基因组/蛋白质整合模型出现",
+    "s2_t7": "AlphaFold 3、ESM3 — 多模态生物AI",
+    "s2_insight_t": "核心洞察",
+    "s2_insight_p": "诞生于NLP的Transformer，仅用3年就解决了结构生物学50年的重大难题（蛋白质折叠问题）。",
+    "s2_numbers_t": "数据一览",
+    "s2_numbers_p": "AlphaFold DB中的预测结构数量",
+    // Slide 3 - Section
+    "s3_title": "Transformer架构",
+    "s3_sub": "逐一理解核心组件",
+    // Slide 4 - Overall Architecture
+    "s4_title": "Transformer整体结构",
+    "s4_sub": "将鼠标悬停在各模块上查看说明",
+    "s4_tip1": "将字符转换为数值向量",
+    "s4_tip2": "使用sin/cos函数编码位置信息",
+    "s4_tip3": "计算输入所有位置对之间的相关性",
+    "s4_tip4": "通过非线性变换提取特征",
+    "s4_tip5": "输出序列内的自注意力（未来掩码）",
+    "s4_tip6": "参考编码器输出的交叉注意力",
+    "s4_tip7": "非线性变换",
+    "s4_tip8": "最终概率分布输出",
+    "s4_enc": "编码器 × N",
+    "s4_dec": "解码器 × N",
+    "s4_res": "+ 残差连接 & 层归一化",
+    // Slide 5 - Tokenization
+    "s5_title": "分词与嵌入",
+    "s5_sub": "序列 → 数值向量：Transformer的第一步",
+    "s5_bio_title": "生物序列的分词化",
+    "s5_bio_desc": "<strong>DNA：</strong>每个核苷酸(A, T, G, C)或k-mer单位<br><strong>蛋白质：</strong>每个氨基酸(20种 + 特殊标记)<br><strong>RNA：</strong>每个核苷酸(A, U, G, C)",
+    "s5_dna_label": "DNA序列示例（k-mer = 3）：",
+    "s5_prot_label": "蛋白质序列示例：",
+    "s5_emb_title": "嵌入（Embedding）",
+    "s5_emb_desc": "将每个标记转换为高维向量（如768维）。\n通过训练，语义相似的标记获得相近的向量。",
+    // Slide 6 - Positional Encoding
+    "s6_title": "位置编码（Positional Encoding）",
+    "s6_why_title": "为什么需要？",
+    "s6_why1": "RNN顺序处理 → 位置信息内在包含",
+    "s6_why2": "Transformer同时看到所有标记 → 没有位置信息！",
+    "s6_why3": "序列中位置很重要：相同的氨基酸在不同位置可能有不同功能",
+    "s6_math": "数学定义",
+    "s6_pe_note": "pos = 序列中的位置，i = 维度索引，d = 嵌入维度",
+    "s6_bio_title": "生物信息学中的变体",
+    "s6_v1t": "可学习的位置编码",
+    "s6_v1p": "ESM、ProtTrans等使用可学习参数代替sin/cos，针对蛋白质序列特性进行优化",
+    "s6_v2t": "相对位置编码（RPE）",
+    "s6_v2p": "AlphaFold中使用。编码残基间的相对距离而非绝对位置 → 更好地泛化不同序列长度",
+    "s6_v3t": "旋转位置嵌入（RoPE）",
+    "s6_v3p": "最新模型（ESM3等）采用。通过旋转变换在点积中自然反映相对位置",
+    // Slide 7 - Self-Attention Concept
+    "s7_title": "什么是自注意力？",
+    "s7_sub": '"这条序列中哪些位置对哪些位置重要？"——计算这一关系的机制',
+    "s7_idea_title": "核心思想",
+    "s7_idea1": "每个标记计算与所有其他标记的相关性（注意力分数）",
+    "s7_idea2": "从高度相关的标记中吸收更多信息",
+    "s7_idea3": "无论序列长度，一次比较所有标记对",
+    "s7_bio": "<strong>生物学意义：</strong>在蛋白质序列中，自注意力自动学习3D空间中相近的残基对（接触图）。注意力权重 ≈ 残基间距离的倒数！",
+    "s7_qkv_title": "Query-Key-Value 类比",
+    "s7_qkv_intro": "在图书馆找书时：",
+    "s7_q": '"这个残基想和谁相互作用？"（搜索词）',
+    "s7_k": '"我是具有这些特性的残基"（书名）',
+    "s7_v": '"我的实际信息是这个"（书的内容）',
+    "s7_qkv_note": "Q与K的相似度越高，对应V的权重就越大。",
+    // Slide 8 - Attention Formula
+    "s8_title": "缩放点积注意力",
+    "s8_c1t": "QK^T",
+    "s8_c1p": "Query和Key的点积 → 相似度矩阵(n×n)\n每对标记的相关性分数",
+    "s8_c2t": "除以 √d_k",
+    "s8_c2p": "维度增大时点积值也增大 → softmax变得极端。缩放使其稳定",
+    "s8_c3t": "Softmax",
+    "s8_c3p": "将分数转换为概率分布。总和为1，可用于加权平均",
+    "s8_c4t": "× V",
+    "s8_c4p": "用概率分布对Value进行加权求和。从相关位置收集更多信息",
+    "s8_step_title": "逐步计算示例",
+    "s8_note": "* 矩阵乘法可在GPU上进行大规模并行计算",
+    // Slide 9 - Interactive Attention
+    "s9_title": "注意力可视化 — 交互式演示",
+    "s9_sub": "点击氨基酸标记查看其注意力分布",
+    "s9_seq_label": "蛋白质序列（GFP片段）：",
+    "s9_weights_label": "注意力权重（选定残基 → 其他）：",
+    "s9_explain_label": "解释：",
+    "s9_placeholder": "← 请点击左侧的氨基酸",
+    // Slide 10 - Multi-Head
+    "s10_title": "多头注意力",
+    "s10_sub": "从多个角度同时执行注意力的机制",
+    "s10_why": "为什么需要多个头？",
+    "s10_r1": "单个注意力头只能捕捉一种关系类型",
+    "s10_r2": "蛋白质中存在多种共存的相互作用类型：",
+    "s10_r3": "氢键模式",
+    "s10_r4": "疏水相互作用",
+    "s10_r5": "静电相互作用",
+    "s10_r6": "二硫键（S-S键）",
+    "s10_r7": "每个头学习不同的相互作用！",
+    "s10_head_note": "点击每个Head查看其注意力模式",
+    "s10_bio": "<strong>ESM-1b的发现：</strong>特定注意力头与蛋白质接触图呈高度相关。Transformer仅从序列就隐式学习了3D结构！",
+    // Head names
+    "head1": "Head 1\n氢键", "head2": "Head 2\n疏水性", "head3": "Head 3\n静电", "head4": "Head 4\n邻近残基",
+    "head5": "Head 5\n二级结构", "head6": "Head 6\n保守性", "head7": "Head 7\n表面残基", "head8": "Head 8\n活性位点",
+    // Slide 11 - FFN
+    "s11_title": "FFN、残差连接、LayerNorm",
+    "s11_sub": "Transformer块的其余核心组件",
+    "s11_c1t": "前馈神经网络（FFN）",
+    "s11_c1p": '独立应用于每个位置的两层MLP。\n\nFFN(x) = max(0, xW₁ + b₁)W₂ + b₂\n通常 d_ff = 4 × d_model (768 → 3072 → 768)\n\n注意力决定"看哪里"，FFN决定"提取什么"。',
+    "s11_c2t": "残差连接",
+    "s11_c2p": "将输入加到输出上：\n\noutput = x + SubLayer(x)\n\n为什么？防止深层网络中的梯度消失。充当信息的"高速公路"。",
+    "s11_c3t": "层归一化",
+    "s11_c3p": "在每个样本内归一化为均值0、方差1：\n\nLN(x) = γ · (x - μ) / σ + β\n\n稳定训练并加速收敛。存在Pre-LN和Post-LN变体。",
+    "s11_block_label": "一个Transformer块（Post-LN）",
+    // Slide 12 - Section Bio
+    "s12_title": "生物信息学应用",
+    "s12_sub": "Transformer如何解决生物学的根本问题",
+    // Slide 13 - Protein LM
+    "s13_title": "蛋白质语言模型（Protein LM）",
+    "s13_sub": '如同自然语言的BERT，一个能"读懂"蛋白质序列的模型',
+    "s13_mlm_title": "训练方法：掩码语言建模",
+    "s13_mlm_desc": "将部分氨基酸用[MASK]遮盖，训练模型根据上下文预测原始氨基酸",
+    "s13_train_label": "训练示例：",
+    "s13_models_title": "代表模型",
+    "s13_can_title": "能力",
+    "s13_caps": ["结构预测", "功能预测", "变异效果预测", "蛋白质设计", "接触图提取", "进化分析"],
+    // Slide 14 - AlphaFold
+    "s14_title": "AlphaFold — 结构预测革命",
+    "s14_sub": "终结蛋白质折叠问题50年历史的AI",
+    "s14_evo_title": "Evoformer：AlphaFold的核心",
+    "s14_i1t": "1. 三角注意力",
+    "s14_i1p": "从残基A-B、B-C的关系推断A-C的关系。将3D空间的三角不等式内化到网络中。",
+    "s14_i2t": "2. MSA ↔ Pair 信息交换",
+    "s14_i2p": "进化信息(MSA)和结构信息(Pair)相互迭代精炼。",
+    "s14_i3t": "3. 端到端学习",
+    "s14_i3p": "在单一网络中直接预测序列 → 3D坐标。无需单独的能量最小化。",
+    "s14_innov": "核心创新",
+    // Slide 15 - Genomics
+    "s15_title": "基因组学应用",
+    "s15_c1t": "DNABERT / DNABERT-2",
+    "s15_c1p": "将DNA序列分词为k-mer并以BERT方式训练。用于启动子识别、剪接位点预测等。",
+    "s15_c2t": "Nucleotide Transformer",
+    "s15_c2p": "InstaDeep/Google的25亿参数DNA模型。在18个下游任务中达到SOTA。",
+    "s15_c3t": "Enformer",
+    "s15_c3p": "DeepMind。从DNA序列预测基因表达量。捕捉200kb范围内的长程调控元件。",
+    "s15_c4t": "Evo",
+    "s15_c4p": "Arc Institute。70亿参数。在单一模型中训练DNA、RNA和蛋白质。基因水平的功能预测。",
+    "s15_tags": {
+      "프로모터 예측": "启动子预测", "변이 효과": "变异效果",
+      "인핸서 예측": "增强子预测", "종 분류": "物种分类",
+      "유전자 발현": "基因表达", "조절 요소": "调控元件",
+      "멀티모달": "多模态", "생성 모델": "生成模型"
+    },
+    // Slide 16 - Comparison
+    "s16_title": "RNN vs Transformer — 生物信息学视角",
+    "s16_sub": "为什么Transformer成为序列分析的新标准",
+    "s16_h1": "特性", "s16_h2": "RNN / LSTM", "s16_h3": "Transformer",
+    "s16_r1c1": "长程依赖",
+    "s16_r1c2": "✗ 远距离信息丢失（梯度消失）",
+    "s16_r1c3": "✓ 通过自注意力平等处理所有距离",
+    "s16_r2c1": "并行处理",
+    "s16_r2c2": "✗ 顺序处理 → GPU利用率有限",
+    "s16_r2c3": "✓ 所有位置同时计算 → GPU最优",
+    "s16_r3c1": "训练速度",
+    "s16_r3c2": "✗ 长序列非常慢",
+    "s16_r3c3": "✓ 大规模数据快速训练",
+    "s16_r4c1": "可解释性",
+    "s16_r4c2": "✗ 隐藏状态难以解释",
+    "s16_r4c3": "✓ 注意力权重可实现关系可视化",
+    "s16_r5c1": "序列长度限制",
+    "s16_r5c2": "理论上无限（实际约1000）",
+    "s16_r5c3": "✗ O(n²)内存 → 长基因组受限*",
+    "s16_r6c1": "预训练",
+    "s16_r6c2": "✗ 结构上困难",
+    "s16_r6c3": "✓ MLM、CLM等自然的预训练方式",
+    "s16_note": "* 解决O(n²)问题的研究正在积极进行：Linformer、Flash Attention、Mamba等",
+    // Slide 17 - Section Practice
+    "s17_title": "实践与测验",
+    "s17_sub": "验证所学内容并通过代码实践",
+    // Slide 18 - PyTorch
+    "s18_title": "Self-Attention PyTorch实现",
+    "s18_sub": "亲自编写核心代码",
+    "s18_explain_title": "代码解析",
+    "s18_e1t": "1. 投影（Projection）",
+    "s18_e1p": "将输入x通过W_q、W_k、W_v变换生成Q、K、V。每个矩阵大小为d_model × d_model。",
+    "s18_e2t": "2. 多头分离",
+    "s18_e2p": "将d_model分成n_heads份。例：768 = 12 heads × 64 dim。每个头独立执行注意力。",
+    "s18_e3t": "3. 注意力计算",
+    "s18_e3p": "QK^T / √d_k → softmax → × V。通过矩阵运算高效并行处理。",
+    "s18_e4t": "4. 输出投影",
+    "s18_e4p": "将所有头的结果拼接后通过W_o投影生成最终输出。",
+    // Slide 19 - ESM
+    "s19_title": "ESM-2 实践代码",
+    "s19_sub": "提取和利用蛋白质序列嵌入",
+    "s19_emb_title": "嵌入提取",
+    "s19_use_title": "应用示例",
+    "s19_u1t": "功能预测",
+    "s19_u2t": "变异效果预测",
+    "s19_u2p": "计算掩码位置各氨基酸的概率 → 通过与野生型的对数似然比对变异效果评分",
+    "s19_u3t": "接触图提取",
+    "s19_u3p": "从注意力权重中提取接触图获取3D结构信息（无需额外的MSA！）",
+    // Quizzes
+    "q1_title": "测验 1",
+    "q1_q": "自注意力的时间复杂度是多少？",
+    "q1_a": "A. O(n) — 与序列长度线性相关",
+    "q1_b": "B. O(n log n) — 分治法",
+    "q1_c": "C. O(n²) — 比较所有配对",
+    "q1_d": "D. O(n³) — 矩阵乘法",
+    "q1_correct": '<strong style="color:#55EFC4;">正确！</strong>自注意力是O(n²)，因为它比较所有标记对。随着序列长度n增长，内存和计算量急剧增加。这是Transformer处理长基因组序列的主要限制。',
+    "q1_wrong": '<strong style="color:#FF7675;">错误！</strong>请再想想。查看提示找到正确答案。',
+    "q2_title": "测验 2",
+    "q2_q": 'AlphaFold 2的Evoformer中"三角注意力"的作用是什么？',
+    "q2_a": "A. 将序列分成3个标记为一组进行处理",
+    "q2_b": "B. 从残基A-B、B-C的关系推断A-C的关系",
+    "q2_c": "C. 仅使用3个注意力头来最大化效率",
+    "q2_d": "D. 应用三角形掩码模式",
+    "q2_correct": '<strong style="color:#55EFC4;">正确！</strong>三角注意力反映了3D空间的三角不等式。如果残基A接近B，B接近C，那么A和C也在一定程度上接近——这种几何约束被注入到网络中。',
+    "q2_wrong": '<strong style="color:#FF7675;">错误！</strong>请再想想。查看提示找到正确答案。',
+    "q3_title": "测验 3",
+    "q3_q": "在ESM等蛋白质语言模型中，注意力权重揭示了什么生物学信息？",
+    "q3_a": "A. 蛋白质的分子量",
+    "q3_b": "B. mRNA的二级结构",
+    "q3_c": "C. 3D空间中残基间的接触（接触图）",
+    "q3_d": "D. 基因表达水平",
+    "q3_correct": '<strong style="color:#55EFC4;">正确！</strong>Rao等人(2021)发现ESM-1b的注意力权重与蛋白质3D接触图高度相关。模型仅从序列就隐式学习了结构信息。',
+    "q3_wrong": '<strong style="color:#FF7675;">错误！</strong>请再想想。查看提示找到正确答案。',
+    // Slide 23 - Advanced
+    "s23_title": "最新趋势与未来方向",
+    "s23_sub": "超越Transformer：生物信息学AI的前沿",
+    "s23_c1t": "高效注意力",
+    "s23_c1p": '<strong>Flash Attention、Linear Attention</strong> — 解决O(n²)内存问题，实现全基因组级别的输入处理',
+    "s23_c1bio": "<strong>Hyena、Mamba</strong> — 基于SSM（状态空间模型）的架构，无需注意力即可处理长序列",
+    "s23_c2t": "生成式生物AI",
+    "s23_c2p": '超越理解序列：<strong>设计全新的蛋白质/DNA</strong>。为药物研发和酶工程带来革命性变化。',
+    "s23_c3t": "多模态模型",
+    "s23_c3p": "序列+结构+功能+文本的统一训练。<strong>AlphaFold 3</strong>不仅预测蛋白质，还预测包括DNA、RNA和配体在内的复合物结构。",
+    "s23_c4t": "单细胞Transformer",
+    "s23_c4p": "<strong>scGPT、Geneformer</strong> — 使用Transformer分析单细胞RNA-seq数据。用于细胞类型分类和基因网络推断。",
+    // Summary
+    "s24_title": "核心总结",
+    "s24_sub": "总结今天所学内容",
+    "s24_c1t": "1. Transformer架构",
+    "s24_c1l1": "<strong>自注意力</strong>：计算所有位置对之间的相关性",
+    "s24_c1l2": "<strong>多头</strong>：同时捕捉多种关系类型",
+    "s24_c1l3": "<strong>位置编码</strong>：向向量注入顺序信息",
+    "s24_c1l4": "<strong>FFN + 残差</strong>：特征提取与训练稳定化",
+    "s24_c2t": "2. 生物信息学应用",
+    "s24_c2l1": "<strong>蛋白质LM</strong>：ESM、ProtTrans（MLM训练）",
+    "s24_c2l2": "<strong>结构预测</strong>：AlphaFold（Evoformer）",
+    "s24_c2l3": "<strong>基因组学</strong>：DNABERT、Enformer、Evo",
+    "s24_c2l4": "<strong>单细胞</strong>：scGPT、Geneformer",
+    "s24_msg_title": "Take-Home Message",
+    "s24_msg": 'Transformer是<strong>理解序列的通用引擎</strong>。<br>无论是自然语言、DNA还是蛋白质——"Attention Is All You Need。"<br>生物信息学者理解Transformer不是选择，而是<strong style="color:#55EFC4;">必须</strong>。',
+    // Resources
+    "s25_title": "参考资料 & 进一步学习",
+    "s25_c1t": "核心论文",
+    "s25_c2t": "代码与工具",
+    "s25_c3t": "学习资源",
+    "s25_thanks": "谢谢！",
+    "s25_questions": "欢迎随时提问",
+    // Attention demo explanations
+    "attn_M": "Met(M)是起始密码子的氨基酸。对序列中央的疏水残基(L, F)显示强烈注意力。→ 与疏水核心形成相关。",
+    "attn_S": "Ser(S)是亲水残基。对Lys(K)和Thr(T)有高注意力。→ 氢键网络伙伴。",
+    "attn_K": "Lys(K)是带正电残基。对带负电的Glu(E)注意力非常高。→ 盐桥相互作用！",
+    "attn_G": "Gly(G)是最小的残基。对Leu(L)和Phe(F)有注意力。→ 提供结构灵活性。",
+    "attn_E": "Glu(E)是带负电残基。对Lys(K)注意力最高。→ 形成K-E盐桥。",
+    "attn_L": "Leu(L)是疏水残基。对Met(M)和Phe(F)有注意力。→ 疏水核心堆积。",
+    "attn_F": "Phe(F)是芳香族残基。对Leu(L)有强注意力。→ 疏水 + π-stacking相互作用。",
+    "attn_T": "Thr(T)是极性残基。对Gly(G)和Val(V)有注意力。→ 倾向形成β-折叠结构。",
+    "attn_V": "Val(V)是疏水β-支链残基。对Gly(G)和其他Val有注意力。→ 偏好β-折叠。",
+    // Key hints
+    "key_hints": '使用 <kbd>←</kbd> <kbd>→</kbd> 或 <kbd>Space</kbd> 导航',
+  }
+};
+
+// Current language
+let currentLang = 'ko';
+
+// Map of data-i18n attribute assignments
+// We'll tag elements on init and translate them dynamically
+function tagElements() {
+  const slides = document.querySelectorAll('.slide');
+
+  // Helper: tag an element by adding data-i18n and storing original HTML
+  function tag(el, key) {
+    if (!el) return;
+    el.setAttribute('data-i18n', key);
+    if (!el.dataset.origHtml) el.dataset.origHtml = el.innerHTML;
+  }
+
+  // Slide 0 - Title
+  const s0 = slides[0];
+  tag(s0.querySelector('[style*="letter-spacing"]'), 's0_badge');
+  const s0titles = s0.querySelectorAll('.slide-title');
+  if (s0titles[0]) { tag(s0titles[0], 's0_title'); }
+  const s0subs = s0.querySelectorAll('.slide-subtitle');
+  if (s0subs[0]) { tag(s0subs[0], 's0_sub'); }
+  const s0hint = s0.querySelector('p:last-child');
+  if (s0hint) tag(s0hint, 's0_hint');
+
+  // Slide 1
+  const s1 = slides[1];
+  tag(s1.querySelector('.slide-title'), 's1_title');
+  tag(s1.querySelector('.slide-subtitle'), 's1_sub');
+  const s1cards = s1.querySelectorAll('.card');
+  if (s1cards[0]) { tag(s1cards[0].querySelector('h3'), 's1_c1t'); tag(s1cards[0].querySelector('p'), 's1_c1p'); }
+  if (s1cards[1]) { tag(s1cards[1].querySelector('h3'), 's1_c2t'); tag(s1cards[1].querySelector('p'), 's1_c2p'); }
+  if (s1cards[2]) { tag(s1cards[2].querySelector('h3'), 's1_c3t'); tag(s1cards[2].querySelector('p'), 's1_c3p'); }
+
+  // Slide 2 - Timeline
+  const s2 = slides[2];
+  tag(s2.querySelector('.slide-title'), 's2_title');
+  const tlTexts = s2.querySelectorAll('.timeline-text');
+  for (let i = 0; i < tlTexts.length; i++) tag(tlTexts[i], 's2_t' + (i + 1));
+  const s2cards = s2.querySelectorAll('.card');
+  if (s2cards[0]) { tag(s2cards[0].querySelector('h3'), 's2_insight_t'); tag(s2cards[0].querySelector('p'), 's2_insight_p'); }
+  if (s2cards[1]) { tag(s2cards[1].querySelector('h3'), 's2_numbers_t'); tag(s2cards[1].querySelector('p:last-child'), 's2_numbers_p'); }
+
+  // Slide 3 - Section
+  const s3 = slides[3];
+  tag(s3.querySelector('.slide-title'), 's3_title');
+  tag(s3.querySelector('.slide-subtitle'), 's3_sub');
+
+  // Slide 4 - Architecture
+  const s4 = slides[4];
+  tag(s4.querySelector('.slide-title'), 's4_title');
+  tag(s4.querySelector('.slide-subtitle'), 's4_sub');
+  const s4tips = s4.querySelectorAll('[data-tip]');
+  const tipKeys = ['s4_tip1','s4_tip2','s4_tip3','s4_tip4','s4_tip5','s4_tip6','s4_tip7','s4_tip8'];
+  s4tips.forEach((el, i) => { if (tipKeys[i]) { el.setAttribute('data-i18n-tip', tipKeys[i]); el.dataset.origTip = el.dataset.tip; }});
+  const s4labels = s4.querySelectorAll('[style*="font-size:12px"]');
+  s4labels.forEach(el => {
+    if (el.textContent.includes('Encoder')) tag(el, 's4_enc');
+    else if (el.textContent.includes('Decoder')) tag(el, 's4_dec');
+  });
+  const s4res = s4.querySelector('[style*="font-size:11px"]');
+  if (s4res) tag(s4res, 's4_res');
+
+  // Slide 5 - Tokenization
+  const s5 = slides[5];
+  tag(s5.querySelector('.slide-title'), 's5_title');
+  tag(s5.querySelector('.slide-subtitle'), 's5_sub');
+  const s5h3s = s5.querySelectorAll('h3');
+  s5h3s.forEach(h => {
+    if (h.textContent.includes('토큰화')) tag(h, 's5_bio_title');
+    if (h.textContent.includes('임베딩')) tag(h, 's5_emb_title');
+  });
+  const s5bio = s5.querySelector('.bio-example');
+  if (s5bio) tag(s5bio, 's5_bio_desc');
+  const s5ps = s5.querySelectorAll('p');
+  s5ps.forEach(p => {
+    if (p.textContent.includes('DNA 서열 예시')) tag(p, 's5_dna_label');
+    if (p.textContent.includes('단백질 서열 예시')) tag(p, 's5_prot_label');
+    if (p.textContent.includes('각 토큰을 고차원')) tag(p, 's5_emb_desc');
+  });
+
+  // Slide 6 - Positional Encoding
+  const s6 = slides[6];
+  tag(s6.querySelector('.slide-title'), 's6_title');
+  const s6h3s = s6.querySelectorAll('h3');
+  s6h3s.forEach(h => {
+    if (h.textContent.includes('왜 필요')) tag(h, 's6_why_title');
+    if (h.textContent.includes('수학적')) tag(h, 's6_math');
+    if (h.textContent.includes('생물정보학에서')) tag(h, 's6_bio_title');
+  });
+  const s6lis = s6.querySelectorAll('.styled-list > li');
+  if (s6lis[0]) tag(s6lis[0], 's6_why1');
+  if (s6lis[1]) tag(s6lis[1], 's6_why2');
+  if (s6lis[2]) tag(s6lis[2], 's6_why3');
+  const s6note = s6.querySelector('p[style*="color:rgba(255,255,255,0.5)"]');
+  if (s6note) tag(s6note, 's6_pe_note');
+  const s6cards = s6.querySelectorAll('.card');
+  if (s6cards[0]) { tag(s6cards[0].querySelector('h3'), 's6_v1t'); tag(s6cards[0].querySelector('p'), 's6_v1p'); }
+  if (s6cards[1]) { tag(s6cards[1].querySelector('h3'), 's6_v2t'); tag(s6cards[1].querySelector('p'), 's6_v2p'); }
+  if (s6cards[2]) { tag(s6cards[2].querySelector('h3'), 's6_v3t'); tag(s6cards[2].querySelector('p'), 's6_v3p'); }
+
+  // Slide 7 - Self-Attention Concept
+  const s7 = slides[7];
+  tag(s7.querySelector('.slide-title'), 's7_title');
+  tag(s7.querySelector('.slide-subtitle'), 's7_sub');
+  const s7h3s = s7.querySelectorAll('h3');
+  s7h3s.forEach(h => {
+    if (h.textContent.includes('핵심 아이디어')) tag(h, 's7_idea_title');
+    if (h.textContent.includes('Query-Key-Value')) tag(h, 's7_qkv_title');
+  });
+  const s7lis = s7.querySelectorAll('ul.styled-list');
+  if (s7lis[0]) {
+    const items = s7lis[0].querySelectorAll('li');
+    if (items[0]) tag(items[0], 's7_idea1');
+    if (items[1]) tag(items[1], 's7_idea2');
+    if (items[2]) tag(items[2], 's7_idea3');
+  }
+  const s7bio = s7.querySelector('.bio-example');
+  if (s7bio) tag(s7bio, 's7_bio');
+  const s7card = s7.querySelector('.card');
+  if (s7card) {
+    const s7cardPs = s7card.querySelectorAll('p');
+    s7cardPs.forEach(p => {
+      if (p.textContent.includes('도서관')) tag(p, 's7_qkv_intro');
+      if (p.textContent.includes('Q와 K의')) tag(p, 's7_qkv_note');
+    });
+    const s7cardLis = s7card.querySelectorAll('li');
+    s7cardLis.forEach(li => {
+      if (li.textContent.includes('Query')) tag(li, 's7_q_li');
+      if (li.textContent.includes('Key')) tag(li, 's7_k_li');
+      if (li.textContent.includes('Value')) tag(li, 's7_v_li');
+    });
+  }
+
+  // Slide 8 - Attention Formula
+  const s8 = slides[8];
+  tag(s8.querySelector('.slide-title'), 's8_title');
+  const s8cards = s8.querySelectorAll('.card');
+  const s8keys = [['s8_c1t','s8_c1p'],['s8_c2t','s8_c2p'],['s8_c3t','s8_c3p'],['s8_c4t','s8_c4p']];
+  s8cards.forEach((c, i) => { if (s8keys[i]) { tag(c.querySelector('h3'), s8keys[i][0]); tag(c.querySelector('p'), s8keys[i][1]); }});
+  const s8h3s = s8.querySelectorAll('h3');
+  s8h3s.forEach(h => { if (h.textContent.includes('단계별')) tag(h, 's8_step_title'); });
+  const s8anno = s8.querySelector('.anno');
+  if (s8anno) tag(s8anno, 's8_note');
+
+  // Slide 9 - Interactive Attention
+  const s9 = slides[9];
+  tag(s9.querySelector('.slide-title'), 's9_title');
+  tag(s9.querySelector('.slide-subtitle'), 's9_sub');
+  const s9ps = s9.querySelectorAll('p');
+  s9ps.forEach(p => {
+    if (p.textContent.includes('단백질 서열')) tag(p, 's9_seq_label');
+    if (p.textContent.includes('Attention Weights')) tag(p, 's9_weights_label');
+    if (p.textContent.includes('해석')) tag(p, 's9_explain_label');
+  });
+
+  // Slide 10 - Multi-Head
+  const s10 = slides[10];
+  tag(s10.querySelector('.slide-title'), 's10_title');
+  tag(s10.querySelector('.slide-subtitle'), 's10_sub');
+  const s10h3s = s10.querySelectorAll('h3');
+  s10h3s.forEach(h => { if (h.textContent.includes('왜 여러')) tag(h, 's10_why'); });
+  const s10bio = s10.querySelector('.bio-example');
+  if (s10bio) tag(s10bio, 's10_bio');
+
+  // Slide 11 - FFN
+  const s11 = slides[11];
+  tag(s11.querySelector('.slide-title'), 's11_title');
+  tag(s11.querySelector('.slide-subtitle'), 's11_sub');
+
+  // Slide 12 - Section Bio
+  const s12 = slides[12];
+  tag(s12.querySelector('.slide-title'), 's12_title');
+  tag(s12.querySelector('.slide-subtitle'), 's12_sub');
+
+  // Slide 13 - Protein LM
+  const s13 = slides[13];
+  tag(s13.querySelector('.slide-title'), 's13_title');
+  tag(s13.querySelector('.slide-subtitle'), 's13_sub');
+
+  // Slide 14 - AlphaFold
+  const s14 = slides[14];
+  tag(s14.querySelector('.slide-title'), 's14_title');
+  tag(s14.querySelector('.slide-subtitle'), 's14_sub');
+  const s14h3s = s14.querySelectorAll('h3');
+  s14h3s.forEach(h => { if (h.textContent.includes('핵심 혁신')) tag(h, 's14_innov'); });
+  const s14cards = s14.querySelectorAll('.card');
+  const s14keys = [['s14_i1t','s14_i1p'],['s14_i2t','s14_i2p'],['s14_i3t','s14_i3p']];
+  s14cards.forEach((c, i) => { if (s14keys[i]) { tag(c.querySelector('h3'), s14keys[i][0]); tag(c.querySelector('p'), s14keys[i][1]); }});
+
+  // Slide 15 - Genomics
+  const s15 = slides[15];
+  tag(s15.querySelector('.slide-title'), 's15_title');
+  const s15cards = s15.querySelectorAll('.card');
+  const s15keys = [['s15_c1t','s15_c1p'],['s15_c2t','s15_c2p'],['s15_c3t','s15_c3p'],['s15_c4t','s15_c4p']];
+  s15cards.forEach((c, i) => { if (s15keys[i]) { tag(c.querySelector('h3'), s15keys[i][0]); tag(c.querySelector('p'), s15keys[i][1]); }});
+
+  // Slide 16 - Comparison
+  const s16 = slides[16];
+  tag(s16.querySelector('.slide-title'), 's16_title');
+  tag(s16.querySelector('.slide-subtitle'), 's16_sub');
+  const s16anno = s16.querySelector('.anno');
+  if (s16anno) tag(s16anno, 's16_note');
+  // Table cells
+  const s16ths = s16.querySelectorAll('th');
+  if (s16ths[0]) tag(s16ths[0], 's16_h1');
+  if (s16ths[1]) tag(s16ths[1], 's16_h2');
+  if (s16ths[2]) tag(s16ths[2], 's16_h3');
+  const s16rows = s16.querySelectorAll('tbody tr');
+  const s16rowKeys = ['s16_r1','s16_r2','s16_r3','s16_r4','s16_r5','s16_r6'];
+  s16rows.forEach((row, i) => {
+    if (!s16rowKeys[i]) return;
+    const tds = row.querySelectorAll('td');
+    if (tds[0]) tag(tds[0], s16rowKeys[i] + 'c1');
+    if (tds[1]) tag(tds[1], s16rowKeys[i] + 'c2');
+    if (tds[2]) tag(tds[2], s16rowKeys[i] + 'c3');
+  });
+
+  // Slide 17 - Section Practice
+  const s17 = slides[17];
+  tag(s17.querySelector('.slide-title'), 's17_title');
+  tag(s17.querySelector('.slide-subtitle'), 's17_sub');
+
+  // Slide 18 - PyTorch
+  const s18 = slides[18];
+  tag(s18.querySelector('.slide-title'), 's18_title');
+  tag(s18.querySelector('.slide-subtitle'), 's18_sub');
+  const s18h3s = s18.querySelectorAll('h3');
+  s18h3s.forEach(h => { if (h.textContent.includes('코드 해설')) tag(h, 's18_explain_title'); });
+  const s18cards = s18.querySelectorAll('.card');
+  const s18keys = [['s18_e1t','s18_e1p'],['s18_e2t','s18_e2p'],['s18_e3t','s18_e3p'],['s18_e4t','s18_e4p']];
+  s18cards.forEach((c, i) => { if (s18keys[i]) { tag(c.querySelector('h3'), s18keys[i][0]); tag(c.querySelector('p'), s18keys[i][1]); }});
+
+  // Slide 19 - ESM
+  const s19 = slides[19];
+  tag(s19.querySelector('.slide-title'), 's19_title');
+  tag(s19.querySelector('.slide-subtitle'), 's19_sub');
+  const s19cards = s19.querySelectorAll('.card');
+  if (s19cards[0]) tag(s19cards[0].querySelector('h3'), 's19_u1t');
+  if (s19cards[1]) { tag(s19cards[1].querySelector('h3'), 's19_u2t'); tag(s19cards[1].querySelector('p'), 's19_u2p'); }
+  if (s19cards[2]) { tag(s19cards[2].querySelector('h3'), 's19_u3t'); tag(s19cards[2].querySelector('p'), 's19_u3p'); }
+
+  // Quizzes - Slides 20, 21, 22
+  const quizSlides = [
+    { idx: 20, prefix: 'q1' },
+    { idx: 21, prefix: 'q2' },
+    { idx: 22, prefix: 'q3' },
+  ];
+  quizSlides.forEach(({ idx, prefix }) => {
+    const s = slides[idx];
+    if (!s) return;
+    tag(s.querySelector('.slide-title'), prefix + '_title');
+    tag(s.querySelector('.slide-subtitle'), prefix + '_q');
+    const opts = s.querySelectorAll('.quiz-option');
+    if (opts[0]) tag(opts[0], prefix + '_a');
+    if (opts[1]) tag(opts[1], prefix + '_b');
+    if (opts[2]) tag(opts[2], prefix + '_c');
+    if (opts[3]) tag(opts[3], prefix + '_d');
+  });
+
+  // Slide 23 - Advanced
+  const s23 = slides[23];
+  if (s23) {
+    tag(s23.querySelector('.slide-title'), 's23_title');
+    tag(s23.querySelector('.slide-subtitle'), 's23_sub');
+    const s23cards = s23.querySelectorAll('.card');
+    const s23keys = [['s23_c1t','s23_c1p'],['s23_c2t','s23_c2p'],['s23_c3t','s23_c3p'],['s23_c4t','s23_c4p']];
+    s23cards.forEach((c, i) => {
+      if (s23keys[i]) {
+        tag(c.querySelector('h3'), s23keys[i][0]);
+        tag(c.querySelector('p'), s23keys[i][1]);
+      }
+    });
+    // First card bio-example
+    if (s23cards[0]) {
+      const bio = s23cards[0].querySelector('.bio-example');
+      if (bio) tag(bio, 's23_c1bio');
+    }
+  }
+
+  // Slide 24 - Summary
+  const s24 = slides[24];
+  if (s24) {
+    tag(s24.querySelector('.slide-title'), 's24_title');
+    tag(s24.querySelector('.slide-subtitle'), 's24_sub');
+    const s24cards = s24.querySelectorAll('.card');
+    if (s24cards[0]) {
+      tag(s24cards[0].querySelector('h3'), 's24_c1t');
+      const lis = s24cards[0].querySelectorAll('li');
+      if (lis[0]) tag(lis[0], 's24_c1l1');
+      if (lis[1]) tag(lis[1], 's24_c1l2');
+      if (lis[2]) tag(lis[2], 's24_c1l3');
+      if (lis[3]) tag(lis[3], 's24_c1l4');
+    }
+    if (s24cards[1]) {
+      tag(s24cards[1].querySelector('h3'), 's24_c2t');
+      const lis = s24cards[1].querySelectorAll('li');
+      if (lis[0]) tag(lis[0], 's24_c2l1');
+      if (lis[1]) tag(lis[1], 's24_c2l2');
+      if (lis[2]) tag(lis[2], 's24_c2l3');
+      if (lis[3]) tag(lis[3], 's24_c2l4');
+    }
+    const msgTitle = s24.querySelector('p[style*="font-size:18px"]');
+    if (msgTitle) tag(msgTitle, 's24_msg_title');
+    const msgBody = s24.querySelector('p[style*="font-size:16px"]');
+    if (msgBody) tag(msgBody, 's24_msg');
+  }
+
+  // Slide 25 - Resources
+  const s25 = slides[25];
+  if (s25) {
+    tag(s25.querySelector('.slide-title'), 's25_title');
+    const s25cards = s25.querySelectorAll('.card');
+    if (s25cards[0]) tag(s25cards[0].querySelector('h3'), 's25_c1t');
+    if (s25cards[1]) tag(s25cards[1].querySelector('h3'), 's25_c2t');
+    if (s25cards[2]) tag(s25cards[2].querySelector('h3'), 's25_c3t');
+    const s25ps = s25.querySelectorAll('p');
+    s25ps.forEach(p => {
+      if (p.textContent.includes('감사합니다')) tag(p, 's25_thanks');
+      if (p.textContent.includes('질문이')) tag(p, 's25_questions');
+    });
+  }
+
+  // Key hints
+  const keyHints = document.querySelector('.key-hints');
+  if (keyHints) tag(keyHints, 'key_hints');
+}
+
+function applyTranslation(lang) {
+  currentLang = lang;
+  const dict = i18n[lang] || {};
+
+  // Update lang buttons
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.textContent.includes(
+      lang === 'ko' ? '한국어' : lang === 'zh' ? '中文' : 'EN'
+    ));
+  });
+
+  // Update font
+  if (lang === 'zh') {
+    document.body.style.fontFamily = "'Noto Sans SC', 'Noto Sans KR', sans-serif";
+  } else {
+    document.body.style.fontFamily = "'Noto Sans KR', sans-serif";
+  }
+
+  // Translate all tagged elements
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (lang === 'ko') {
+      // Restore original
+      if (el.dataset.origHtml) el.innerHTML = el.dataset.origHtml;
+    } else if (dict[key]) {
+      el.innerHTML = dict[key];
+    }
+  });
+
+  // Translate tooltips
+  document.querySelectorAll('[data-i18n-tip]').forEach(el => {
+    const key = el.dataset.i18nTip;
+    if (lang === 'ko') {
+      if (el.dataset.origTip) el.dataset.tip = el.dataset.origTip;
+    } else if (dict[key]) {
+      el.dataset.tip = dict[key];
+    }
+  });
+
+  // Update attention demo explanations
+  const attnKeys = { M:'attn_M', S:'attn_S', K:'attn_K', G:'attn_G', E:'attn_E', L:'attn_L', F:'attn_F', T:'attn_T', V:'attn_V' };
+  for (const [aa, key] of Object.entries(attnKeys)) {
+    if (dict[key]) attnExplain[aa] = dict[key];
+    else if (lang === 'ko') {
+      // Restore from original data
+      attnExplain[aa] = attnExplainOrig[aa];
+    }
+  }
+
+  // Rebuild TOC
+  document.getElementById('toc-list').innerHTML = '';
+  buildTOC();
+  updateTOC();
+
+  // Update section names in TOC
+  const sectionNameMap = {
+    intro: dict.sec_intro || '도입',
+    architecture: dict.sec_architecture || '아키텍처',
+    attention: dict.sec_attention || 'Attention 메커니즘',
+    bio: dict.sec_bio || '생물정보학 응용',
+    practice: dict.sec_practice || '실습과 퀴즈',
+    advanced: dict.sec_advanced || '최신 동향',
+    summary: dict.sec_summary || '요약'
+  };
+  document.querySelectorAll('.toc-section').forEach(el => {
+    const section = Object.entries(sectionNameMap).find(([k, v]) =>
+      el.textContent === '도입' || el.textContent === v || Object.values(sectionNameMap).includes(el.textContent)
+    );
+  });
+
+  // Translate TOC title
+  const tocTitle = document.querySelector('#toc-panel h3');
+  if (tocTitle) tocTitle.textContent = dict.toc_title || '목차';
+  const tocBtnSpan = document.querySelector('#toc-btn [data-i18n="toc"]');
+  if (tocBtnSpan) tocBtnSpan.textContent = dict.toc || '목차';
+}
+
+// Store original attention explanations
+const attnExplainOrig = { ...attnExplain };
+
+function setLang(lang) {
+  applyTranslation(lang);
+}
+
+// Override buildTOC to support i18n section names
+const origBuildTOC = buildTOC;
+buildTOC = function() {
+  const list = document.getElementById('toc-list');
+  let currentSection = '';
+  const dict = i18n[currentLang] || {};
+  const sectionNames = {
+    intro: dict.sec_intro || '도입',
+    architecture: dict.sec_architecture || '아키텍처',
+    attention: dict.sec_attention || 'Attention 메커니즘',
+    bio: dict.sec_bio || '생물정보학 응용',
+    practice: dict.sec_practice || '실습과 퀴즈',
+    advanced: dict.sec_advanced || '최신 동향',
+    summary: dict.sec_summary || '요약'
+  };
+
+  const allSlides = document.querySelectorAll('.slide');
+  allSlides.forEach((slide, i) => {
+    const section = slide.dataset.section;
+    if (section !== currentSection) {
+      currentSection = section;
+      const div = document.createElement('div');
+      div.className = 'toc-section';
+      div.textContent = sectionNames[section] || section;
+      list.appendChild(div);
+    }
+    const btn = document.createElement('button');
+    btn.className = 'toc-item';
+    // Use translated title from the slide's title element if translated
+    const titleEl = slide.querySelector('.slide-title, .section-number');
+    let slideTitle = slide.dataset.title;
+    btn.textContent = (i + 1) + '. ' + slideTitle;
+    btn.onclick = () => goToSlide(i);
+    btn.dataset.index = i;
+    list.appendChild(btn);
+  });
+};
+
+// Override quiz feedback for i18n
+const origCheckQuiz = checkQuiz;
+checkQuiz = function(btn, isCorrect, quizId) {
+  const feedback = document.getElementById(quizId + '-feedback');
+  const options = btn.parentElement.querySelectorAll('.quiz-option');
+  options.forEach(o => { o.disabled = true; o.style.pointerEvents = 'none'; });
+  const dict = i18n[currentLang] || {};
+
+  if (isCorrect) {
+    btn.classList.add('correct');
+    feedback.style.display = 'block';
+    feedback.style.background = 'rgba(85,239,196,0.1)';
+    feedback.style.border = '1px solid rgba(85,239,196,0.3)';
+    feedback.innerHTML = dict[quizId + '_correct'] || feedback.innerHTML ||
+      (quizId === 'q1' ? '<strong style="color:#55EFC4;">정답!</strong> Self-Attention은 모든 토큰 쌍을 비교하므로 O(n²)입니다.' :
+       quizId === 'q2' ? '<strong style="color:#55EFC4;">정답!</strong> Triangle Attention은 3D 공간의 삼각 부등식을 반영합니다.' :
+       '<strong style="color:#55EFC4;">정답!</strong> ESM-1b의 attention weight가 접촉 맵과 높은 상관관계를 보입니다.');
+  } else {
+    btn.classList.add('wrong');
+    feedback.style.display = 'block';
+    feedback.style.background = 'rgba(255,118,117,0.1)';
+    feedback.style.border = '1px solid rgba(255,118,117,0.3)';
+    feedback.innerHTML = dict[quizId + '_wrong'] || '<strong style="color:#FF7675;">오답!</strong> 다시 생각해보세요.';
+    setTimeout(() => {
+      options.forEach(o => { if (!o.classList.contains('wrong')) { o.disabled = false; o.style.pointerEvents = 'auto'; }});
+    }, 1000);
+  }
+};
+
 // ==================== INIT ====================
+tagElements();
+document.getElementById('toc-list').innerHTML = '';
 buildTOC();
 initAttentionDemo();
 initMultiHead();
