@@ -2492,7 +2492,7 @@ const i18n = {
     "s11_c1t": "前馈神经网络（FFN）",
     "s11_c1p": '独立应用于每个位置的两层MLP。\n\nFFN(x) = max(0, xW₁ + b₁)W₂ + b₂\n通常 d_ff = 4 × d_model (768 → 3072 → 768)\n\n注意力决定"看哪里"，FFN决定"提取什么"。',
     "s11_c2t": "残差连接",
-    "s11_c2p": "将输入加到输出上：\n\noutput = x + SubLayer(x)\n\n为什么？防止深层网络中的梯度消失。充当信息的"高速公路"。",
+    "s11_c2p": '将输入加到输出上：\n\noutput = x + SubLayer(x)\n\n为什么？防止深层网络中的梯度消失。充当信息的"高速公路"。',
     "s11_c3t": "层归一化",
     "s11_c3p": "在每个样本内归一化为均值0、方差1：\n\nLN(x) = γ · (x - μ) / σ + β\n\n稳定训练并加速收敛。存在Pre-LN和Post-LN变体。",
     "s11_block_label": "一个Transformer块（Post-LN）",
