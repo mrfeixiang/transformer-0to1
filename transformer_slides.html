@@ -1807,7 +1807,7 @@ document.addEventListener('touchend', e => {
 });
 
 // ==================== TABLE OF CONTENTS ====================
-function buildTOC() {
+var buildTOC = function() {
   const list = document.getElementById('toc-list');
   let currentSection = '';
   const sectionNames = {
@@ -1971,7 +1971,7 @@ function initMultiHead() {
 }
 
 // ==================== QUIZ ====================
-function checkQuiz(btn, isCorrect, quizId) {
+var checkQuiz = function(btn, isCorrect, quizId) {
   const feedback = document.getElementById(quizId + '-feedback');
   const options = btn.parentElement.querySelectorAll('.quiz-option');
   options.forEach(o => { o.disabled = true; o.style.pointerEvents = 'none'; });
